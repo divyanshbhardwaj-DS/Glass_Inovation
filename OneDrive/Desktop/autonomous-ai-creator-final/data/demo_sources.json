@@ -1,0 +1,72 @@
+[
+  {
+    "id": "demo-relevant",
+    "title": "OpenAI announces a new security evaluation framework for agentic systems",
+    "description": "A concrete AI security development with direct relevance to an AI security editor.",
+    "url": "https://example.com/demo/relevant",
+    "category": "relevant",
+    "source_quality": 0.95,
+    "impact": 0.88,
+    "current": true
+  },
+  {
+    "id": "demo-irrelevant",
+    "title": "Local cafe launches a new weekend breakfast menu",
+    "description": "A lifestyle update about a neighborhood business changing its weekend hours and food options.",
+    "url": "https://example.com/demo/irrelevant",
+    "category": "irrelevant",
+    "source_quality": 0.70,
+    "impact": 0.10,
+    "current": true
+  },
+  {
+    "id": "demo-duplicate",
+    "title": "OpenAI announces a new security evaluation framework for agentic systems",
+    "description": "A repeated headline used to exercise duplicate prevention.",
+    "url": "https://example.com/demo/duplicate",
+    "category": "duplicate",
+    "source_quality": 0.95,
+    "impact": 0.88,
+    "current": true
+  },
+  {
+    "id": "demo-borderline",
+    "title": "Report questions security implications of a new AI model update, though evidence is preliminary",
+    "description": "A plausible but not yet well-corroborated security angle on a model update; single early-stage source.",
+    "url": "https://example.com/demo/borderline",
+    "category": "borderline",
+    "source_quality": 0.55,
+    "impact": 0.45,
+    "current": true
+  },
+  {
+    "id": "demo-high-impact",
+    "title": "Critical vulnerability discovered in widely deployed AI agent tooling",
+    "description": "A high-impact security story with potential consequences for deployed systems.",
+    "url": "https://example.com/demo/high-impact",
+    "category": "high-impact",
+    "source_quality": 0.92,
+    "impact": 0.99,
+    "current": true
+  },
+  {
+    "id": "demo-low-quality",
+    "title": "Anonymous post claims AI models are secretly compromised",
+    "description": "A sensational claim with weak sourcing and no verifiable evidence.",
+    "url": "https://example.com/demo/low-quality",
+    "category": "low-quality-source",
+    "source_quality": 0.15,
+    "impact": 0.40,
+    "current": true
+  },
+  {
+    "id": "demo-breaking",
+    "title": "Emergency patch released after active exploitation of an AI service flaw",
+    "description": "A deterministic breaking-news example for demo and fallback mode.",
+    "url": "https://example.com/demo/breaking",
+    "category": "breaking-current",
+    "source_quality": 0.97,
+    "impact": 0.98,
+    "current": true
+  }
+]

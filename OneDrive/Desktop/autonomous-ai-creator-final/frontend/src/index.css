@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { background-color: #08090b; }
+* { scrollbar-width: thin; scrollbar-color: #39404c transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #272c35; border-radius: 4px; }
+:focus-visible { outline: 2px solid #3fd6c4; outline-offset: 2px; border-radius: 2px; }
+
+/* Desk atmosphere: layered glow + fine noise so the background reads as
+   a lit surface, not a flat #000 rectangle. */
+body {
+  background-color: #08090b;
+  background-image:
+    radial-gradient(1100px 620px at 8% -8%, rgba(63, 214, 196, 0.09), transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, rgba(245, 166, 35, 0.06), transparent 55%),
+    radial-gradient(1200px 800px at 50% 110%, rgba(63, 214, 196, 0.04), transparent 60%);
+  background-attachment: fixed;
+}
+
+.desk-grain { position: relative; }
+.desk-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.panel-raised {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 40%),
+              rgba(18, 21, 26, 0.72);
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.04) inset, 0 12px 28px -18px rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+}
+
+.card-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -22px rgba(0,0,0,0.85);
+}
+
+/* --- Verdict stamp: rubber ink-stamp mark with an uneven double ring
+   and a soft ink-bleed glow, the signature element of the design. --- */
+.stamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Space Grotesk', ui-sans-serif, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  padding: 0.28rem 0.65rem;
+  transform: rotate(-3deg);
+  box-shadow:
+    0 0 0 1px currentColor inset,
+    0 0 14px -2px currentColor;
+  opacity: 0.95;
+}
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  opacity: 0.3;
+  transform: rotate(1.5deg);
+  pointer-events: none;
+}
+.stamp::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 2px;
+  background: radial-gradient(ellipse at 30% 20%, currentColor, transparent 70%);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* --- Wire ticker: continuous scrolling ribbon, faded at both edges so
+   it reads as an infinite feed rather than text cut off mid-word. --- */
+.ticker-viewport {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 48px, black calc(100% - 48px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, black 48px, black calc(100% - 48px), transparent 100%);
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 42s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.score-fill {
+  background: linear-gradient(90deg, currentColor, color-mix(in srgb, currentColor 65%, white));
+  box-shadow: 0 0 8px -1px currentColor;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #eeece4, #a9a495);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  .card-lift { transition: none; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
