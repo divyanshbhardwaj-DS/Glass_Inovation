@@ -245,6 +245,16 @@
     });
   });
 
+  /* All Services toggle: expand / collapse the extra list */
+  var allSvcToggle = document.getElementById('allSvcToggle');
+  var allSvcPanel = document.getElementById('allSvcPanel');
+  if(allSvcToggle && allSvcPanel){
+    allSvcToggle.addEventListener('click', function(){
+      var open = allSvcPanel.classList.toggle('open');
+      allSvcToggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+
   /* Full-list service buttons: jump to quote form, prefilled */
   var sflBtns = document.querySelectorAll('.sfl-btn');
   var fMsgBox = document.getElementById('fMsg');

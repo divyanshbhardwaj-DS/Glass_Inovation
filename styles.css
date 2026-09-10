@@ -539,7 +539,21 @@ section.section-flush{padding-top:0;}
   margin-top:clamp(40px, 5vw, 64px);
 }
 @media (max-width:768px){
-  .services-4grid{grid-template-columns:1fr; gap:20px;}
+  /* phone keeps the 2×2 block layout, compact edition */
+  .services-4grid{grid-template-columns:repeat(2, 1fr); gap:12px;}
+  .svc-card{min-height:330px; border-radius:18px;}
+  .svc-card__content{padding:20px 14px;}
+  .svc-card__num{font-size:10px; margin-bottom:8px;}
+  .svc-card__icon{width:34px; height:34px; margin-bottom:10px;}
+  .svc-card h3{font-size:18px; margin-bottom:6px;}
+  .svc-card__desc{
+    font-size:11.5px; line-height:1.55;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .svc-card__details{gap:5px; margin-top:12px;}
+  .svc-card__feature{font-size:9px; padding:4px 8px;}
+  .svc-card__cta{font-size:12px; margin-top:12px;}
 }
 
 /* ---- individual service card ---- */
@@ -2472,8 +2486,8 @@ footer{background:linear-gradient(180deg, var(--ink-2), #08090B);}
 @media (max-width:560px){
   .hero-stats{margin-top:40px;}
   .hero-stats div{min-width:100%;}
-  .svc-card{min-height:380px;}
-  .svc-card__content{padding:30px 24px;}
+  .svc-card{min-height:330px;}
+  .svc-card__content{padding:20px 14px;}
 }
 
 /* ================= FULL SERVICE LIST ================= */
@@ -2482,7 +2496,7 @@ footer{background:linear-gradient(180deg, var(--ink-2), #08090B);}
   border:1px solid rgba(255,255,255,0.1);
   border-radius:24px;
   background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008));
-  padding:clamp(28px, 4vw, 48px);
+  padding:30px 22px;
   text-align:center;
   box-shadow:0 30px 70px -40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.07);
 }
@@ -2541,5 +2555,53 @@ footer{background:linear-gradient(180deg, var(--ink-2), #08090B);}
 }
 .sfl-grid b{display:block; font-size:14.5px; font-weight:600; color:var(--frost);}
 .sfl-grid span{display:block; font-size:12.5px; color:var(--dim); margin-top:3px; line-height:1.5;}
+
+/* ---- All Services toggle (list hidden until tapped) ---- */
+.sfl-toggle{
+  display:inline-flex; align-items:center; justify-content:center; gap:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.16);
+  color:var(--frost);
+  font-size:16px; font-weight:700; letter-spacing:0.01em;
+  padding:16px 34px; border-radius:999px; cursor:pointer;
+  box-shadow:0 18px 40px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition:border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.sfl-toggle:hover{
+  border-color:var(--accent-hi);
+  background:rgba(200,53,58,0.1);
+  transform:translateY(-2px);
+  box-shadow:0 22px 44px -20px rgba(200,53,58,0.5);
+}
+.sfl-toggle:active{transform:scale(0.98);}
+.sfl-toggle:focus-visible{outline:2px solid var(--glint); outline-offset:3px;}
+.sfl-toggle-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border-radius:50%;
+  background:var(--accent); color:#fff; flex:none;
+}
+.sfl-toggle-icon svg{width:14px; height:14px; transition:transform .35s var(--ease);}
+.sfl-toggle[aria-expanded="true"] .sfl-toggle-icon svg{transform:rotate(180deg);}
+.sfl-collapsible{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .5s var(--ease);
+}
+.sfl-collapsible.open{grid-template-rows:1fr;}
+.sfl-collapsible-inner{overflow:hidden; min-height:0;}
+.sfl-collapsible .sfl-head{padding-top:30px;}
+.sfl-collapsible .btn-cut{margin-bottom:6px;}
+@media (prefers-reduced-motion:reduce){.sfl-collapsible{transition:none;}}
+
+/* ---- Phone: reviews go 2-up, compact ---- */
+@media (max-width:768px){
+  .reviews-grid{grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:28px;}
+  .review-card{padding:20px 16px; border-radius:18px;}
+  .rev-stars{font-size:13px; letter-spacing:2px; margin-bottom:10px;}
+  .rev-text{font-size:12.5px; line-height:1.6; margin-bottom:16px;}
+  .rev-author{gap:9px;}
+  .rev-avatar{width:32px; height:32px; font-size:11px;}
+  .rev-author b{font-size:12.5px;}
+  .rev-author span{font-size:10.5px;}
+}
 
 
