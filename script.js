@@ -42,19 +42,38 @@
   var burger = document.getElementById('burgerBtn');
   var panel = document.getElementById('mobilePanel');
   function closeMenu(){
-    burger.setAttribute('aria-expanded','false');
-    panel.classList.remove('open');
+    if(burger) burger.setAttribute('aria-expanded','false');
+    if(panel) panel.classList.remove('open');
     document.body.style.overflow = '';
   }
-  burger.addEventListener('click', function(){
-    var open = burger.getAttribute('aria-expanded') === 'true';
-    burger.setAttribute('aria-expanded', String(!open));
-    panel.classList.toggle('open', !open);
-    document.body.style.overflow = !open ? 'hidden' : '';
-  });
-  panel.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && panel.classList.contains('open')){ closeMenu(); }
+  if(burger && panel){
+    burger.addEventListener('click', function(){
+      var open = burger.getAttribute('aria-expanded') === 'true';
+      burger.setAttribute('aria-expanded', String(!open));
+      panel.classList.toggle('open', !open);
+      document.body.style.overflow = !open ? 'hidden' : '';
+    });
+    panel.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && panel.classList.contains('open')){ closeMenu(); }
+    });
+  }
+
+  /* ---- quote CTA smooth scroll & focus ---- */
+  var quoteCtas = document.querySelectorAll('a[href="#contact"]');
+  quoteCtas.forEach(function(cta){
+    cta.addEventListener('click', function(e){
+      var contactSec = document.getElementById('contact');
+      if(contactSec){
+        e.preventDefault();
+        closeMenu();
+        contactSec.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+        setTimeout(function(){
+          var nameInput = document.getElementById('fName');
+          if(nameInput) nameInput.focus({ preventScroll: true });
+        }, 600);
+      }
+    });
   });
 
   /* ---- scroll-spy active nav link ---- */
@@ -173,7 +192,9 @@
     });
     svcGroups.forEach(function(g){
       var grp = g.getAttribute('data-svc-group');
-      g.hidden = !(grp === svc || (isExtra && grp === 'extra'));
+      var isActive = (grp === svc || (isExtra && grp === 'extra'));
+      g.hidden = !isActive;
+      g.disabled = !isActive;
     });
     if(moreBtn){
       moreBtn.classList.toggle('active', isExtra);
@@ -189,6 +210,9 @@
     if(chip === moreBtn) return;
     chip.addEventListener('click', function(){ setService(chip.getAttribute('data-service')); closeMoreMenu(); });
   });
+  if (fService && fService.value) {
+    setService(fService.value);
+  }
 
   /* ⋯ More-services menu */
   function openMoreMenu(){
@@ -328,7 +352,10 @@
       ? ''
       : 'http://localhost:3001';
 
-    fetch(apiBase + '/api/quote', {
+    var quoteEndpoint = apiBase + '/api/quote';
+    console.log('[QUOTE FORM] Submitting quote enquiry to:', quoteEndpoint);
+
+    fetch(quoteEndpoint, {
       method: 'POST',
       body: data
     })
@@ -340,7 +367,12 @@
         // Success
         form.reset();
         form.style.display = 'none';
-        success.textContent = result.data.message || 'Thank you \u2014 we\u2019ll be in touch shortly!';
+        var msgSpan = success.querySelector('span');
+        if (msgSpan) {
+          msgSpan.textContent = result.data.message || 'Thank you \u2014 we\u2019ll be in touch shortly!';
+        } else {
+          success.textContent = result.data.message || 'Thank you \u2014 we\u2019ll be in touch shortly!';
+        }
         success.classList.add('show');
         success.focus();
       } else {
@@ -415,4 +447,339 @@
     window.addEventListener('touchmove', onPointerMove, { passive: true });
     window.addEventListener('touchend', onPointerUp);
   })();
-})();
+
+  /* ---- Dynamic Customer Reviews System ---- */
+  (function(){
+    var reviewsGrid = document.getElementById('reviewsGrid');
+    var openModalBtn = document.getElementById('openReviewModalBtn');
+    var closeModalBtn = document.getElementById('closeReviewModalBtn');
+    var cancelModalBtn = document.getElementById('cancelReviewBtn');
+    var modal = document.getElementById('reviewModal');
+    var form = document.getElementById('customerReviewForm');
+    var formError = document.getElementById('revFormError');
+    var submitBtn = document.getElementById('revSubmitBtn');
+    var successState = document.getElementById('revSuccessState');
+    var successCloseBtn = document.getElementById('revSuccessCloseBtn');
+    var googleBtn = document.getElementById('googleReviewBtn');
+
+    var starPicker = document.getElementById('starPicker');
+    var ratingInput = document.getElementById('revRating');
+    var ratingLabel = document.getElementById('ratingLabelText');
+    var revText = document.getElementById('revText');
+    var charCount = document.getElementById('revCharNum');
+    var photoInput = document.getElementById('revPhoto');
+    var photoPreview = document.getElementById('revPhotoPreview');
+    var photoImg = document.getElementById('revPhotoImg');
+    var removePhotoBtn = document.getElementById('revRemovePhotoBtn');
+
+    var ratingLabels = {
+      1: '1 Star (Poor)',
+      2: '2 Stars (Fair)',
+      3: '3 Stars (Good)',
+      4: '4 Stars (Very Good)',
+      5: '5 Stars (Excellent)'
+    };
+
+    function esc(str){
+      if(!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function getInitials(name){
+      if(!name) return 'CGI';
+      var parts = name.trim().split(/\s+/);
+      if(parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      return name.slice(0, 2).toUpperCase();
+    }
+
+    function formatReviewDate(iso){
+      if(!iso) return '';
+      try {
+        var d = new Date(iso);
+        if(isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('en-AU', { month: 'short', year: 'numeric' });
+      } catch { return ''; }
+    }
+
+    // 1. Fetch public configuration (e.g. Google Review URL)
+    function loadConfig(){
+      fetch('/api/config')
+        .then(function(r){ return r.json(); })
+        .then(function(cfg){
+          if(cfg && cfg.googleReviewUrl && googleBtn){
+            googleBtn.href = cfg.googleReviewUrl;
+          }
+        })
+        .catch(function(){});
+    }
+
+    // 2. Load Approved Reviews from SQLite Database
+    function loadApprovedReviews(){
+      if(!reviewsGrid) return;
+      fetch('/api/reviews')
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          var reviews = (res && res.data) ? res.data : [];
+          renderReviews(reviews);
+        })
+        .catch(function(){
+          renderReviews([]);
+        });
+    }
+
+    function renderReviews(list){
+      if(!reviewsGrid) return;
+
+      if(!list || list.length === 0){
+        // Honest, transparent empty state when 0 reviews have been approved yet
+        reviewsGrid.innerHTML =
+          '<div class="rev-empty-card">' +
+            '<svg class="rev-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+            '<h3>Be the First to Review Us</h3>' +
+            '<p>We take pride in our architectural glass craftsmanship. If our family team has recently completed a shower screen, splashback, mirror, or glass repair for you, we invite you to share your experience!</p>' +
+            '<button type="button" class="btn-cut btn-cut-solid btn-empty-rev" id="emptyRevBtn">Write a Review</button>' +
+          '</div>';
+
+        var emptyBtn = document.getElementById('emptyRevBtn');
+        if(emptyBtn){
+          emptyBtn.addEventListener('click', openModal);
+        }
+        return;
+      }
+
+      var isDevEnv = (function(){
+        try {
+          var h = window.location.hostname || '';
+          return h === 'localhost' || h === '127.0.0.1' || h === '::1' || h.indexOf('192.168.') === 0 || h.indexOf('10.') === 0 || h.endsWith('.local') || window.location.port === '3001' || window.location.port === '3000';
+        } catch(e){ return false; }
+      })();
+
+      reviewsGrid.innerHTML = list.map(function(r){
+        var starsStr = '★★★★★'.slice(0, Math.max(1, Math.min(5, r.rating || 5)));
+        var initials = getInitials(r.name);
+        var dateStr = formatReviewDate(r.approved_at || r.created_at);
+
+        var photoHtml = r.photoUrl ?
+          '<div class="rev-photo-box"><img src="' + esc(r.photoUrl) + '" alt="Project photo by ' + esc(r.name) + '" loading="lazy"></div>' :
+          '';
+
+        var demoIndicator = (r.is_demo && isDevEnv) ?
+          '<span class="rev-demo-badge" title="Development demo preview — not a verified customer review">Sample Preview</span>' : '';
+
+        return '<div class="review-card">' +
+          '<div>' +
+            '<div class="rev-top-meta">' +
+              '<div class="rev-stars" aria-label="' + (r.rating || 5) + ' out of 5 stars">' + starsStr + '</div>' +
+              '<div style="display:flex;align-items:center;gap:8px;">' +
+                demoIndicator +
+                (dateStr ? '<span class="rev-date-badge">' + esc(dateStr) + '</span>' : '') +
+              '</div>' +
+            '</div>' +
+            '<p class="rev-text">&ldquo;' + esc(r.review) + '&rdquo;</p>' +
+            photoHtml +
+          '</div>' +
+          '<div class="rev-author">' +
+            '<div class="rev-avatar" aria-hidden="true">' + esc(initials) + '</div>' +
+            '<div>' +
+              '<b>' + esc(r.name) + '</b>' +
+              '<span>' + esc(r.suburb) + (r.service ? ' · ' + esc(r.service) : '') + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // 3. Modal Handlers
+    function openModal(){
+      if(!modal) return;
+      if(form) form.style.display = 'block';
+      if(successState) successState.style.display = 'none';
+      if(formError) formError.style.display = 'none';
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      var firstInput = document.getElementById('revName');
+      if(firstInput) setTimeout(function(){ firstInput.focus(); }, 100);
+    }
+
+    function closeModal(){
+      if(!modal) return;
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      if(form) form.reset();
+      if(photoPreview) photoPreview.style.display = 'none';
+      if(photoImg) photoImg.src = '';
+      setRating(5);
+    }
+
+    if(openModalBtn) openModalBtn.addEventListener('click', openModal);
+    if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if(cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+    if(successCloseBtn) successCloseBtn.addEventListener('click', closeModal);
+
+    if(modal){
+      modal.addEventListener('click', function(e){
+        if(e.target === this) closeModal();
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    }
+
+    // 4. Star Picker Interactivity
+    function setRating(val){
+      val = Math.max(1, Math.min(5, parseInt(val, 10) || 5));
+      if(ratingInput) ratingInput.value = val;
+      if(ratingLabel) ratingLabel.textContent = ratingLabels[val] || (val + ' Stars');
+      if(starPicker){
+        var btns = starPicker.querySelectorAll('.star-btn');
+        btns.forEach(function(b){
+          var bVal = parseInt(b.dataset.val, 10);
+          b.classList.toggle('active', bVal <= val);
+        });
+      }
+    }
+
+    if(starPicker){
+      starPicker.addEventListener('click', function(e){
+        var btn = e.target.closest('.star-btn');
+        if(btn){
+          var val = parseInt(btn.dataset.val, 10);
+          setRating(val);
+        }
+      });
+
+      starPicker.addEventListener('mouseover', function(e){
+        var btn = e.target.closest('.star-btn');
+        if(btn){
+          var hoverVal = parseInt(btn.dataset.val, 10);
+          var btns = starPicker.querySelectorAll('.star-btn');
+          btns.forEach(function(b){
+            var bVal = parseInt(b.dataset.val, 10);
+            b.classList.toggle('active', bVal <= hoverVal);
+          });
+        }
+      });
+
+      starPicker.addEventListener('mouseleave', function(){
+        var current = ratingInput ? parseInt(ratingInput.value, 10) || 5 : 5;
+        setRating(current);
+      });
+    }
+
+    // 5. Character count
+    if(revText && charCount){
+      revText.addEventListener('input', function(){
+        charCount.textContent = revText.value.length;
+      });
+    }
+
+    // 6. Photo preview
+    if(photoInput){
+      photoInput.addEventListener('change', function(){
+        if(photoInput.files && photoInput.files[0]){
+          var file = photoInput.files[0];
+          if(!file.type.match(/^image\//i)){
+            alert('Please select a valid image file (JPEG, PNG, WEBP).');
+            photoInput.value = '';
+            return;
+          }
+          if(file.size > 8 * 1024 * 1024){
+            alert('Photo size is too large (maximum 8MB).');
+            photoInput.value = '';
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function(e){
+            if(photoImg) photoImg.src = e.target.result;
+            if(photoPreview) photoPreview.style.display = 'flex';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    if(removePhotoBtn){
+      removePhotoBtn.addEventListener('click', function(){
+        if(photoInput) photoInput.value = '';
+        if(photoImg) photoImg.src = '';
+        if(photoPreview) photoPreview.style.display = 'none';
+      });
+    }
+
+    // 7. Review Form Submission
+    if(form){
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(formError) formError.style.display = 'none';
+
+        var nameVal = document.getElementById('revName') ? document.getElementById('revName').value.trim() : '';
+        var suburbVal = document.getElementById('revSuburb') ? document.getElementById('revSuburb').value.trim() : '';
+        var serviceVal = document.getElementById('revService') ? document.getElementById('revService').value : '';
+        var textVal = revText ? revText.value.trim() : '';
+        var ratingVal = ratingInput ? ratingInput.value : '5';
+
+        // Validation
+        if(!nameVal || nameVal.length < 2){
+          showError('Please enter your name.');
+          return;
+        }
+        if(!suburbVal || suburbVal.length < 2){
+          showError('Please enter your suburb.');
+          return;
+        }
+        if(!serviceVal){
+          showError('Please select the service provided.');
+          return;
+        }
+        if(!textVal || textVal.length < 10){
+          showError('Please enter a review of at least 10 characters.');
+          return;
+        }
+
+        var formData = new FormData(form);
+        var origBtnText = submitBtn ? submitBtn.querySelector('.rev-btn-text').textContent : 'Submit Review';
+        if(submitBtn){
+          submitBtn.disabled = true;
+          submitBtn.querySelector('.rev-btn-text').textContent = 'Submitting...';
+        }
+
+        fetch('/api/reviews', {
+          method: 'POST',
+          body: formData
+        })
+        .then(function(r){
+          return r.json().then(function(d){ return { ok: r.ok, data: d }; });
+        })
+        .then(function(res){
+          if(res.ok && res.data.success){
+            if(form) form.style.display = 'none';
+            if(successState) successState.style.display = 'block';
+          } else {
+            showError(res.data.error || 'Failed to submit review. Please try again.');
+          }
+        })
+        .catch(function(){
+          showError('Connection error submitting review. Please check your internet connection.');
+        })
+        .finally(function(){
+          if(submitBtn){
+            submitBtn.disabled = false;
+            submitBtn.querySelector('.rev-btn-text').textContent = origBtnText;
+          }
+        });
+      });
+    }
+
+    function showError(msg){
+      if(!formError) return;
+      formError.textContent = msg;
+      formError.style.display = 'block';
+      formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Initial load
+    loadConfig();
+    loadApprovedReviews();
+  })();
+})();
+
