@@ -1,7 +1,7 @@
 # Complete Glass Innovations — Dockerfile
 # Node.js serves both the static frontend and the /api + /admin backend
 
-FROM node:20-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
