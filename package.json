@@ -17,5 +17,8 @@
     "showers"
   ],
   "author": "Complete Glass Innovations",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

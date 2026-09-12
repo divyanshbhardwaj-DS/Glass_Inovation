@@ -1081,14 +1081,14 @@ app.use((err, req, res, _next) => {
 // ─── Start ───────────────────────────────────────────────────────────────────
 async function main() {
   transporter = await createTransporter();
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n======================================================`);
     console.log(`  COMPLETE GLASS INNOVATIONS — FULL-STACK SERVER`);
     console.log(`======================================================`);
-    console.log(`  Frontend: http://localhost:${PORT}`);
-    console.log(`  Admin:    http://localhost:${PORT}/admin`);
-    console.log(`  API:      http://localhost:${PORT}/api/quote`);
-    console.log(`  Health:   http://localhost:${PORT}/api/health`);
+    console.log(`  Frontend: http://0.0.0.0:${PORT}`);
+    console.log(`  Admin:    http://0.0.0.0:${PORT}/admin`);
+    console.log(`  API:      http://0.0.0.0:${PORT}/api/quote`);
+    console.log(`  Health:   http://0.0.0.0:${PORT}/api/health`);
     console.log(`  Mode:     ${NODE_ENV}`);
     console.log(`======================================================\n`);
   });

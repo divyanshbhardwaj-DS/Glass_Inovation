@@ -347,10 +347,8 @@
     // Checkbox doesn't submit a value when unchecked — normalise explicitly
     data.set('emergency', document.getElementById('fEmergency').checked ? 'true' : 'false');
 
-    // Determine API base: same-origin when served by Node, else localhost fallback
-    var apiBase = (window.location.port === '3001' || window.location.port === '' || window.location.port === '80' || window.location.port === '443')
-      ? ''
-      : 'http://localhost:3001';
+    // Determine API base: same-origin when served by Node, else local file fallback
+    var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3001' : '';
 
     var quoteEndpoint = apiBase + '/api/quote';
     console.log('[QUOTE FORM] Submitting quote enquiry to:', quoteEndpoint);
