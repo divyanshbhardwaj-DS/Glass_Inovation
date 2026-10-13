@@ -321,6 +321,11 @@ class SQLiteDatabaseStore {
     return info.changes > 0;
   }
 
+  checkIntegrity() {
+    const row = this.db.prepare('PRAGMA integrity_check').get();
+    return row ? (row.integrity_check || Object.values(row)[0]) : 'ok';
+  }
+
   // ─── Enquiry Methods ────────────────────────────────────────────────────────
   _formatRow(row) {
     if (!row) return null;

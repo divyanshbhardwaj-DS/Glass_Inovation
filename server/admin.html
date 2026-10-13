@@ -712,19 +712,29 @@
       var scopeBits = [];
       if (r.location) scopeBits.push('📍 ' + esc(r.location));
       if (d.shower_frame) scopeBits.push('Frame: ' + esc(d.shower_frame));
-      if (d.shower_length || d.shower_width || d.shower_height) scopeBits.push((d.shower_length||'—')+'×'+(d.shower_width||'—')+'×'+(d.shower_height||'—')+(d.shower_unit||'mm'));
+      if (d.shower_length || d.shower_width || d.shower_height) scopeBits.push((d.shower_length||'—')+'×'+(d.shower_width||'—')+'×'+(d.shower_height||'—')+'mm');
+      if (d.length || d.extra_length) scopeBits.push('Length: ' + (d.length || d.extra_length) + 'mm');
       if (d.pet_type) scopeBits.push('Pet: ' + (d.pet_type==='cat'?'Cat':'Dog '+(d.pet_dog_size||'')));
+      if (d.pet_reglazing) scopeBits.push('Reglaze: ' + esc(d.pet_reglazing));
       if (d.mirror_type) scopeBits.push(esc(d.mirror_type));
       if (d.splashback_finish) scopeBits.push(esc(d.splashback_finish));
+      if (d.splashback_brand || d.splashback_colour) scopeBits.push((d.splashback_brand||'Dulux') + ': ' + (d.splashback_colour||''));
+      if (r.photo) scopeBits.push('📷 Photo');
       if (r.message) scopeBits.push('"' + esc(r.message.slice(0, 60)) + (r.message.length>60?'…':'') + '"');
       var scopeHtml = scopeBits.length ? scopeBits.join(' · ') : '— Standard Scope —';
 
       var emailBadge = r.email_status === 'sent' ?
         '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);margin-top:4px;" title="Owner Email Sent">✉ Sent</span>' :
-        (r.email_status === 'failed' ? '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);margin-top:4px;" title="Owner Email Delivery Failed">✉ Failed</span>' : '');
+        (r.email_status === 'failed' ? '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);margin-top:4px;" title="Owner Email Delivery Failed">✉ Failed</span>' :
+        (r.email_status === 'not_configured' ? '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);margin-top:4px;" title="SMTP Not Configured">✉ Unconfigured</span>' : ''));
+
+      var smsBadge = r.sms_status === 'sent' ?
+        '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);margin-top:4px;" title="Owner SMS Sent">📱 Sent</span>' :
+        (r.sms_status === 'failed' ? '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);margin-top:4px;" title="Owner SMS Delivery Failed">📱 Failed</span>' :
+        (r.sms_status === 'not_configured' ? '<span style="display:inline-block;padding:1px 5px;font-size:10px;font-weight:600;border-radius:3px;background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);margin-top:4px;" title="Twilio SMS Not Configured">📱 Unconfigured</span>' : ''));
 
       return '<tr data-id="'+r.id+'"' + (r.emergency ? ' class="emergency-row"' : '') + '>' +
-        '<td><span class="id">#'+r.id+'</span>' + (emailBadge ? '<div>'+emailBadge+'</div>' : '') + '</td>' +
+        '<td><span class="id">#'+r.id+'</span>' + ((emailBadge || smsBadge) ? '<div style="display:flex;gap:4px;flex-wrap:wrap;">'+emailBadge+smsBadge+'</div>' : '') + '</td>' +
         '<td>' +
           '<div class="name">'+(r.emergency ? '<span title="EMERGENCY / PRIORITY LEAD">🚨</span> ' : '')+esc(r.name)+'</div>' +
           '<div class="contact-line">' +
@@ -790,12 +800,20 @@
       });
 
       var photoHtml = r.photo ?
-        '<div style="margin-top:16px;"><label style="font-size:11px;font-family:var(--mono);text-transform:uppercase;color:var(--dim);">Customer Uploaded Photo</label><div class="photo-preview"><img src="/admin/uploads/'+esc(r.photo)+'?token='+encodeURIComponent(token)+'" alt="Upload photo"></div><a href="/admin/uploads/'+esc(r.photo)+'" target="_blank" style="color:var(--glint);font-size:12px;margin-top:6px;display:inline-block;">Open full resolution photo ↗</a></div>' :
+        '<div style="margin-top:16px;"><label style="font-size:11px;font-family:var(--mono);text-transform:uppercase;color:var(--dim);">Customer Uploaded Photo</label><div class="photo-preview"><img src="/admin/uploads/'+esc(r.photo)+'?token='+encodeURIComponent(token)+'" alt="Upload photo"></div><a href="/admin/uploads/'+esc(r.photo)+'?token='+encodeURIComponent(token)+'" target="_blank" style="color:var(--glint);font-size:12px;margin-top:6px;display:inline-block;">Open / Download full resolution photo ↗</a></div>' :
         '';
 
       var emailBadge = r.email_status === 'sent' ?
         '<span class="badge-status approved">✉ Sent</span>' :
-        (r.email_status === 'failed' ? '<span class="badge-status rejected">✉ Failed</span>' : '<span class="badge-status pending">'+esc(r.email_status || 'Pending')+'</span>');
+        (r.email_status === 'failed' ? '<span class="badge-status rejected">✉ Failed</span>' :
+        (r.email_status === 'not_configured' ? '<span class="badge-status" style="background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);">✉ Not Configured</span>' :
+        '<span class="badge-status pending">'+esc(r.email_status || 'Pending')+'</span>'));
+
+      var smsBadge = r.sms_status === 'sent' ?
+        '<span class="badge-status approved">📱 Sent</span>' :
+        (r.sms_status === 'failed' ? '<span class="badge-status rejected">📱 Failed</span>' :
+        (r.sms_status === 'not_configured' ? '<span class="badge-status" style="background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);">📱 Not Configured</span>' :
+        '<span class="badge-status pending">'+esc(r.sms_status || 'Pending')+'</span>'));
 
       var notifyBox =
         '<div class="modal-box" style="border-left:3px solid var(--glint);margin-bottom:18px;">' +
@@ -804,10 +822,10 @@
               '<h4 style="margin:0 0 6px;color:var(--frost);">Owner Notification Status</h4>' +
               '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);flex-wrap:wrap;">' +
                 '<span>Email: ' + emailBadge + '</span>' +
-                (r.sms_status && r.sms_status !== 'pending' ? '<span> · SMS: <b>'+esc(r.sms_status)+'</b></span>' : '') +
-                (r.notified_at ? '<span> · Notified: '+formatDate(r.notified_at)+'</span>' : '') +
+                '<span> · SMS: ' + smsBadge + '</span>' +
+                (r.notified_at ? '<span> · Last Sent: '+formatDate(r.notified_at)+'</span>' : '') +
               '</div>' +
-              (r.email_error ? '<div style="margin-top:6px;font-size:12px;color:var(--error);font-family:var(--mono);">Error: '+esc(r.email_error)+'</div>' : '') +
+              (r.email_error ? '<div style="margin-top:6px;font-size:12px;color:var(--error);font-family:var(--mono);">Email Error: '+esc(r.email_error)+'</div>' : '') +
             '</div>' +
             '<button type="button" class="btn-action-approve" id="resendNotifyBtn" data-id="'+r.id+'" style="font-size:12px;padding:7px 14px;cursor:pointer;">' +
               '✉ Resend Notification' +

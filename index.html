@@ -279,31 +279,50 @@
           <p class="eyebrow">Visual Impact</p>
           <h2>The Frameless Transformation</h2>
         </div>
-        <p>Drag the slider below to see how removing heavy aluminium frames and dated panels unlocks light and visual luxury in real Melbourne homes.</p>
+        <p>Explore real before-and-after transformations in Melbourne homes. Drag the slider on any project to compare dated framed glass with modern architectural frameless glazing.</p>
       </div>
 
-      <div class="before-after-container reveal" id="baContainer">
-        <div class="ba-image-wrapper">
-          <!-- After (Top Layer) -->
-          <div class="ba-layer ba-after">
-            <img src="https://images.unsplash.com/photo-1771929662486-f793e08f0f16?q=80&amp;w=1400&amp;auto=format&amp;fit=crop" alt="After: Frameless Luxury Glass Shower" loading="lazy">
-            <span class="ba-badge after-badge">AFTER — Frameless CGI Glass</span>
+      <div class="before-after-carousel reveal" id="baCarousel">
+        <div class="ba-carousel-header">
+          <div class="ba-meta">
+            <span class="ba-counter" id="baCounter">Project 1 of 2</span>
+            <h3 class="ba-project-title" id="baProjTitle">Frameless Shower Screen Transformation</h3>
+            <p class="ba-project-desc" id="baProjDesc">Replacing heavy framed aluminium and frosted glass with custom 10mm toughened frameless glass transforms light transmission and perceived bathroom space.</p>
           </div>
-
-          <!-- Before (Bottom Layer, Clipped) -->
-          <div class="ba-layer ba-before" id="baBeforeLayer">
-            <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&amp;w=1400&amp;auto=format&amp;fit=crop" alt="Before: Dated framed bathroom" loading="lazy">
-            <span class="ba-badge before-badge">BEFORE — Framed &amp; Confined</span>
+          <div class="ba-nav-controls" role="group" aria-label="Slideshow Controls">
+            <button type="button" class="ba-nav-btn" id="baPrevBtn" aria-label="Previous transformation project">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="ba-dots" id="baDots" role="tablist" aria-label="Project slides"></div>
+            <button type="button" class="ba-nav-btn" id="baNextBtn" aria-label="Next transformation project">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
+        </div>
 
-          <!-- Interactive Handle -->
-          <div class="ba-handle" id="baHandle">
-            <div class="ba-handle-line"></div>
-            <div class="ba-handle-button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/><polyline points="9 18 3 12 9 6" display="none"/></svg>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        <div class="before-after-container" id="baContainer">
+          <div class="ba-image-wrapper" id="baWrapper" aria-label="Interactive before and after comparison slider">
+            <!-- After (Top Layer) -->
+            <div class="ba-layer ba-after">
+              <img id="baAfterImg" src="https://images.unsplash.com/photo-1771929662486-f793e08f0f16?q=80&amp;w=1400&amp;auto=format&amp;fit=crop" alt="After: Frameless Luxury Glass Shower" loading="lazy">
+              <span class="ba-badge after-badge">AFTER — Frameless CGI Glass</span>
             </div>
-            <div class="ba-handle-line"></div>
+
+            <!-- Before (Bottom Layer, Clipped) -->
+            <div class="ba-layer ba-before" id="baBeforeLayer">
+              <img id="baBeforeImg" src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&amp;w=1400&amp;auto=format&amp;fit=crop" alt="Before: Dated framed bathroom" loading="lazy">
+              <span class="ba-badge before-badge">BEFORE — Framed &amp; Confined</span>
+            </div>
+
+            <!-- Interactive Handle -->
+            <div class="ba-handle" id="baHandle">
+              <div class="ba-handle-line"></div>
+              <div class="ba-handle-button" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="ba-handle-line"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -319,7 +338,7 @@
         <div class="swatch-stack">
           <div class="swatch"><span class="swatch-dot"></span> Clear Toughened <b>6MM</b></div>
           <div class="swatch"><span class="swatch-dot dot-lowiron"></span> Ultra Low-Iron <b>10MM</b></div>
-          <div class="swatch"><span class="swatch-dot dot-frosted"></span> Frosted Laminated <b>12MM</b></div>
+          <div class="swatch"><span class="swatch-dot dot-frosted"></span> Obscure Laminated <b>12MM</b></div>
         </div>
       </div>
       <div class="about-copy reveal">
@@ -455,8 +474,16 @@
 
             <div class="contact-detail">
               <div class="cd">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <div><b>Phone</b><span><a href="tel:0497470036" style="color:var(--glint);text-decoration:none;">0497 470 036</a></span></div>
+              </div>
+              <div class="cd">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <div><b>Email</b><span><a href="mailto:Glen@completeglassinnovations.com.au" style="color:var(--glint);text-decoration:none;">Glen@completeglassinnovations.com.au</a></span></div>
+              </div>
+              <div class="cd">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                <div><b>Service Base</b><span>Werribee &amp; Greater Melbourne VIC</span></div>
+                <div><b>Postal Address</b><span>PO Box 785, Werribee 3030</span></div>
               </div>
               <div class="cd">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -566,6 +593,8 @@
                 <label for="fShFrame">Frame type <span class="req" aria-hidden="true">*</span></label>
                 <select id="fShFrame" name="shower_frame" required>
                   <option value="">Select frame type...</option>
+                  <option value="Fully Frameless">Fully Frameless</option>
+                  <option value="Fully Frameless Sliding">Fully Frameless Sliding</option>
                   <option value="Semi-frameless">Semi-frameless</option>
                   <option value="Fully framed">Fully framed</option>
                   <option value="Fully framed sliding">Fully framed sliding</option>
@@ -573,27 +602,29 @@
                 </select>
               </div>
               <div class="field">
-                <label>Dimensions</label>
-                <div class="unit-dim-row">
-                  <div class="field unit-field-dim">
-                    <label for="fShLength" class="sr-only">Length</label>
-                    <input id="fShLength" name="shower_length" type="number" min="0" inputmode="numeric" placeholder="Length">
+                <label>Dimensions <span class="dim-badge-unit">mm only</span></label>
+                <input type="hidden" name="shower_unit" value="mm">
+                <div class="dim-grid-3">
+                  <div class="dim-box">
+                    <label for="fShLength">Length (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fShLength" name="shower_length" type="number" min="0" step="any" inputmode="numeric" placeholder="Length">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
-                  <div class="field unit-field-dim">
-                    <label for="fShWidth" class="sr-only">Width</label>
-                    <input id="fShWidth" name="shower_width" type="number" min="0" inputmode="numeric" placeholder="Width">
+                  <div class="dim-box">
+                    <label for="fShWidth">Width (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fShWidth" name="shower_width" type="number" min="0" step="any" inputmode="numeric" placeholder="Width">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
-                  <div class="field unit-field-dim">
-                    <label for="fShHeight" class="sr-only">Height</label>
-                    <input id="fShHeight" name="shower_height" type="number" min="0" inputmode="numeric" placeholder="Height">
-                  </div>
-                  <div class="field unit-field-select">
-                    <label for="fShUnit" class="sr-only">Unit</label>
-                    <select id="fShUnit" name="shower_unit">
-                      <option value="mm">mm</option>
-                      <option value="cm">cm</option>
-                      <option value="inches">inches</option>
-                    </select>
+                  <div class="dim-box">
+                    <label for="fShHeight">Height (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fShHeight" name="shower_height" type="number" min="0" step="any" inputmode="numeric" placeholder="Height">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -602,9 +633,14 @@
                 <select id="fShGlass" name="shower_glass">
                   <option value="Clear toughened">Clear toughened</option>
                   <option value="Ultra-clear low iron">Ultra-clear low iron</option>
-                  <option value="Frosted / obscure">Frosted / obscure</option>
+                  <option value="Obscure Laminated">Obscure Laminated</option>
                   <option value="Smoked tint">Smoked tint</option>
                 </select>
+              </div>
+              <div class="field">
+                <label for="fShPhoto">Upload a photo (optional)</label>
+                <input id="fShPhoto" name="photo" type="file" accept="image/*">
+                <span class="field-hint">Upload a photo of your existing bathroom, recess or layout (Max 8MB, JPG/PNG/WEBP)</span>
               </div>
             </fieldset>
 
@@ -625,10 +661,10 @@
                   <label for="fDogSize">Dog size <span class="req" aria-hidden="true">*</span></label>
                   <select id="fDogSize" name="pet_dog_size">
                     <option value="">Select size...</option>
-                    <option value="Small (up to 20cm opening)">Small — up to 20cm opening</option>
-                    <option value="Medium (20-30cm opening)">Medium — 20 to 30cm opening</option>
-                    <option value="Large (30-40cm opening)">Large — 30 to 40cm opening</option>
-                    <option value="Extra large (40cm+ opening)">Extra large — 40cm+ opening</option>
+                    <option value="Small (up to 200mm opening)">Small — up to 200mm opening</option>
+                    <option value="Medium (200-300mm opening)">Medium — 200 to 300mm opening</option>
+                    <option value="Large (300-400mm opening)">Large — 300 to 400mm opening</option>
+                    <option value="Extra large (400mm+ opening)">Extra large — 400mm+ opening</option>
                   </select>
                 </div>
                 <div class="field">
@@ -636,30 +672,29 @@
                   <input id="fDogBreed" name="pet_dog_breed" type="text" placeholder="e.g. French Bulldog, Labrador, Great Dane">
                 </div>
                 <div class="field">
-                  <label>Opening dimensions</label>
-                  <div class="unit-dim-row">
-                    <div class="field unit-field-dim">
-                      <label for="fPetWidth" class="sr-only">Width</label>
-                      <input id="fPetWidth" name="pet_width" type="number" min="0" inputmode="numeric" placeholder="Width">
+                  <label>Opening dimensions <span class="dim-badge-unit">mm only</span></label>
+                  <input type="hidden" name="pet_unit" value="mm">
+                  <div class="dim-grid-2">
+                    <div class="dim-box">
+                      <label for="fPetWidth">Width (mm)</label>
+                      <div class="input-unit-group">
+                        <input id="fPetWidth" name="pet_width" type="number" min="0" step="any" inputmode="numeric" placeholder="Width">
+                        <span class="unit-tag">mm</span>
+                      </div>
                     </div>
-                    <div class="field unit-field-dim">
-                      <label for="fPetHeight" class="sr-only">Height</label>
-                      <input id="fPetHeight" name="pet_height" type="number" min="0" inputmode="numeric" placeholder="Height">
-                    </div>
-                    <div class="field unit-field-select">
-                      <label for="fPetUnit" class="sr-only">Unit</label>
-                      <select id="fPetUnit" name="pet_unit">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="inches">inches</option>
-                      </select>
+                    <div class="dim-box">
+                      <label for="fPetHeight">Height (mm)</label>
+                      <div class="input-unit-group">
+                        <input id="fPetHeight" name="pet_height" type="number" min="0" step="any" inputmode="numeric" placeholder="Height">
+                        <span class="unit-tag">mm</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div id="catGroup" hidden>
-                <p class="hint-note">Standard cat door size applies (approx. 180mm x 160mm). Note any variation in Comments below.</p>
+                <p class="hint-note">Standard cat door size applies (approx. 180mm × 160mm). Note any variation in Comments below.</p>
                 <div class="field">
                   <label for="fCatBreed">Cat breed (optional)</label>
                   <input id="fCatBreed" name="pet_cat_breed" type="text" placeholder="e.g. Domestic Shorthair, Maine Coon, Ragdoll">
@@ -668,19 +703,18 @@
 
               <div class="form-row">
                 <div class="field">
-                  <label for="fProxLocation">Proximity reader on</label>
+                  <label for="fProxLocation">Proximity Reader</label>
                   <select id="fProxLocation" name="pet_prox_location">
-                    <option value="">N/A — no prox reader</option>
+                    <option value="No Proximity Reader">No Proximity Reader</option>
                     <option value="Window">Window</option>
                     <option value="Door">Door</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="fReglazing">Reglazing required?</label>
+                  <label for="fReglazing">Reglazing Option <span class="req" aria-hidden="true">*</span></label>
                   <select id="fReglazing" name="pet_reglazing">
-                    <option value="">Select...</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                    <option value="Reglazing Required">Reglazing Required</option>
+                    <option value="No Reglazing Required">No Reglazing Required</option>
                     <option value="Not sure">Not sure</option>
                   </select>
                 </div>
@@ -692,7 +726,7 @@
               </div>
 
               <div class="field">
-                <label for="fPetPhoto">Photo of location / pet (optional)</label>
+                <label for="fPetPhoto">Upload a photo (optional)</label>
                 <input id="fPetPhoto" name="photo" type="file" accept="image/*">
                 <span class="field-hint">Upload a photo of the door/window location or your pet for sizing reference</span>
               </div>
@@ -705,30 +739,29 @@
                 <label for="fMirrorType">Mirror type <span class="req" aria-hidden="true">*</span></label>
                 <select id="fMirrorType" name="mirror_type" required>
                   <option value="">Select type...</option>
-                  <option value="Wardrobe mirror">Wardrobe mirror</option>
+                  <option value="Mirror">Mirror</option>
+                  <option value="Sliding Mirror Door">Sliding Mirror Door</option>
                   <option value="Bathroom mirror">Bathroom mirror</option>
-                  <option value="Sliding glass door">Sliding glass door</option>
                   <option value="Miscellaneous glass">Miscellaneous glass</option>
                 </select>
               </div>
               <div class="field">
-                <label>Approximate dimensions</label>
-                <div class="unit-dim-row">
-                  <div class="field unit-field-dim">
-                    <label for="fMirrorWidth" class="sr-only">Width</label>
-                    <input id="fMirrorWidth" name="mirror_width" type="number" min="0" inputmode="numeric" placeholder="Width">
+                <label>Approximate dimensions <span class="dim-badge-unit">mm only</span></label>
+                <input type="hidden" name="mirror_unit" value="mm">
+                <div class="dim-grid-2">
+                  <div class="dim-box">
+                    <label for="fMirrorWidth">Width (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fMirrorWidth" name="mirror_width" type="number" min="0" step="any" inputmode="numeric" placeholder="Width">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
-                  <div class="field unit-field-dim">
-                    <label for="fMirrorHeight" class="sr-only">Height</label>
-                    <input id="fMirrorHeight" name="mirror_height" type="number" min="0" inputmode="numeric" placeholder="Height">
-                  </div>
-                  <div class="field unit-field-select">
-                    <label for="fMirrorUnit" class="sr-only">Unit</label>
-                    <select id="fMirrorUnit" name="mirror_unit">
-                      <option value="mm">mm</option>
-                      <option value="cm">cm</option>
-                      <option value="inches">inches</option>
-                    </select>
+                  <div class="dim-box">
+                    <label for="fMirrorHeight">Height (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fMirrorHeight" name="mirror_height" type="number" min="0" step="any" inputmode="numeric" placeholder="Height">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -737,10 +770,13 @@
                 <select id="fMirrorFinish" name="mirror_finish">
                   <option value="Standard polished">Standard polished edge</option>
                   <option value="Bevelled">Bevelled edge</option>
-                  <option value="LED back-lit">LED back-lit</option>
-                  <option value="Anti-fog">Anti-fog coated</option>
                   <option value="Shaped / cutout">Shaped / cutout design</option>
                 </select>
+              </div>
+              <div class="field">
+                <label for="fMirrorPhoto">Upload a photo (optional)</label>
+                <input id="fMirrorPhoto" name="photo" type="file" accept="image/*">
+                <span class="field-hint">Upload a photo of your existing space or wall layout</span>
               </div>
             </fieldset>
 
@@ -748,23 +784,22 @@
             <fieldset class="svc-group" data-svc-group="splashback" hidden>
               <legend>Splashback details</legend>
               <div class="field">
-                <label>Approximate dimensions</label>
-                <div class="unit-dim-row">
-                  <div class="field unit-field-dim">
-                    <label for="fSbWidth" class="sr-only">Width</label>
-                    <input id="fSbWidth" name="splashback_width" type="number" min="0" inputmode="numeric" placeholder="Width">
+                <label>Approximate dimensions <span class="dim-badge-unit">mm only</span></label>
+                <input type="hidden" name="splashback_unit" value="mm">
+                <div class="dim-grid-2">
+                  <div class="dim-box">
+                    <label for="fSbWidth">Width (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fSbWidth" name="splashback_width" type="number" min="0" step="any" inputmode="numeric" placeholder="Width">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
-                  <div class="field unit-field-dim">
-                    <label for="fSbHeight" class="sr-only">Height</label>
-                    <input id="fSbHeight" name="splashback_height" type="number" min="0" inputmode="numeric" placeholder="Height">
-                  </div>
-                  <div class="field unit-field-select">
-                    <label for="fSbUnit" class="sr-only">Unit</label>
-                    <select id="fSbUnit" name="splashback_unit">
-                      <option value="mm">mm</option>
-                      <option value="cm">cm</option>
-                      <option value="inches">inches</option>
-                    </select>
+                  <div class="dim-box">
+                    <label for="fSbHeight">Height (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fSbHeight" name="splashback_height" type="number" min="0" step="any" inputmode="numeric" placeholder="Height">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -772,48 +807,97 @@
                 <label for="fSbFinish">Finish type <span class="req" aria-hidden="true">*</span></label>
                 <select id="fSbFinish" name="splashback_finish" required>
                   <option value="">Select finish...</option>
-                  <option value="Flat colour">Flat colour (Dulux match)</option>
+                  <option value="Flat colour">Flat colour</option>
                   <option value="Metallic">Metallic shimmer</option>
                   <option value="Mirror">Mirror finish</option>
                   <option value="Picture / 3D">Picture / 3D print</option>
                 </select>
               </div>
+              <div class="dulux-colour-section">
+                <div class="form-row">
+                  <div class="field">
+                    <label for="fSbBrand">Brand</label>
+                    <input id="fSbBrand" name="splashback_brand" type="text" placeholder="e.g. Dulux" value="Dulux" list="brandSuggestions">
+                    <datalist id="brandSuggestions">
+                      <option value="Dulux"></option>
+                      <option value="Taubmans"></option>
+                      <option value="Colorbond"></option>
+                    </datalist>
+                  </div>
+                  <div class="field">
+                    <label for="fSbColour">Colour</label>
+                    <input id="fSbColour" name="splashback_colour" type="text" placeholder="e.g. Lexicon Quarter, White on White">
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="fSbColourCode">Colour Code</label>
+                  <input id="fSbColourCode" name="splashback_colour_code" type="text" placeholder="e.g. SW1G2, SN1E1">
+                </div>
+              </div>
               <div class="field">
-                <label for="fSbColour">Dulux colour code (if flat colour)</label>
-                <input id="fSbColour" name="splashback_colour" type="text" placeholder="e.g. Dulux Lexicon Quarter,White on White">
+                <label for="fSbPhoto">Upload a photo (optional)</label>
+                <input id="fSbPhoto" name="photo" type="file" accept="image/*">
+                <span class="field-hint">Upload a photo of your kitchen, cooktop or wall area</span>
               </div>
             </fieldset>
 
             <!-- ===== Extra services (pool, balustrade, privacy, repairs) ===== -->
             <fieldset class="svc-group" data-svc-group="extra" hidden>
               <legend id="extraLegend">Service details</legend>
+              <input type="hidden" name="extra_unit" value="mm">
+              
               <div class="field">
-                <label>Approximate dimensions</label>
-                <div class="unit-dim-row unit-dim-row-2">
-                  <div class="field unit-field-dim">
-                    <label for="fExWidth" class="sr-only">Width / length</label>
-                    <input id="fExWidth" name="extra_width" type="number" min="0" inputmode="numeric" placeholder="Width">
+                <label for="fExLength">Length (mm) <span class="dim-badge-unit">mm only</span></label>
+                <div class="input-unit-group">
+                  <input id="fExLength" name="length" type="number" min="0" step="any" inputmode="numeric" placeholder="Length in mm (e.g. 3500)">
+                  <span class="unit-tag">mm</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Other approximate dimensions <span class="dim-badge-unit">mm only (optional)</span></label>
+                <div class="dim-grid-2">
+                  <div class="dim-box">
+                    <label for="fExWidth">Width (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fExWidth" name="extra_width" type="number" min="0" step="any" inputmode="numeric" placeholder="Width">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
-                  <div class="field unit-field-dim">
-                    <label for="fExHeight" class="sr-only">Height</label>
-                    <input id="fExHeight" name="extra_height" type="number" min="0" inputmode="numeric" placeholder="Height">
-                  </div>
-                  <div class="field unit-field-select">
-                    <label for="fExUnit" class="sr-only">Unit</label>
-                    <select id="fExUnit" name="extra_unit">
-                      <option value="mm">mm</option>
-                      <option value="cm">cm</option>
-                      <option value="inches">inches</option>
-                    </select>
+                  <div class="dim-box">
+                    <label for="fExHeight">Height (mm)</label>
+                    <div class="input-unit-group">
+                      <input id="fExHeight" name="extra_height" type="number" min="0" step="any" inputmode="numeric" placeholder="Height">
+                      <span class="unit-tag">mm</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <p class="hint-note">Add access details, photos of the damage or area, and timing in Comments below.</p>
+              <div class="field">
+                <label for="fExPhoto">Upload a photo (optional)</label>
+                <input id="fExPhoto" name="photo" type="file" accept="image/*">
+                <span class="field-hint">Upload a photo of the area, fence line, or damaged glass</span>
+              </div>
+              <p class="hint-note">Add access details, timing, or site instructions in Comments below.</p>
             </fieldset>
 
             <div class="field">
-              <label for="fMsg">Comments &amp; extra instructions</label>
-              <textarea id="fMsg" name="message" rows="4" placeholder="Glass preference (e.g. ultra-clear low iron, frosted/obscure), site access, timing..."></textarea>
+              <label for="fMsg">Comments and extra instructions</label>
+              <textarea id="fMsg" name="message" rows="4" placeholder="Glass preference (e.g. ultra-clear low iron, obscure laminated), site access, timing..."></textarea>
+            </div>
+
+            <!-- ===== Interactive Quote Summary ===== -->
+            <div class="quote-summary-card" id="quoteSummaryCard">
+              <div class="qs-header">
+                <div class="qs-title-wrap">
+                  <svg class="qs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <span class="qs-title">Quote Summary</span>
+                </div>
+                <span class="qs-pill">Units: mm</span>
+              </div>
+              <div class="qs-content" id="quoteSummaryContent">
+                <!-- Dynamically updated by script.js -->
+              </div>
             </div>
 
             <button type="submit" class="btn btn-cut btn-cut-solid btn-block" id="submitBtn">
@@ -847,10 +931,11 @@
         <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
         <a href="tel:0497470036">0497 470 036</a>
+        <a href="mailto:Glen@completeglassinnovations.com.au">Glen@completeglassinnovations.com.au</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© <span id="year"></span> Complete Glass Innovations. Melbourne, VIC. AS1288 Certified Glaziers.</span>
+      <span>© <span id="year"></span> Complete Glass Innovations. PO Box 785, Werribee 3030. AS1288 Certified Glaziers.</span>
       <span><b>Family Owned &amp; Operated</b> · Architectural Frameless Glass Specialists</span>
     </div>
   </div>

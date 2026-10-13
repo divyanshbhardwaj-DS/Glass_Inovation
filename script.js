@@ -205,6 +205,9 @@
     moreOpts.forEach(function(o){
       o.classList.toggle('is-picked', o.getAttribute('data-service') === svc);
     });
+    if (typeof updateQuoteSummary === 'function') {
+      updateQuoteSummary();
+    }
   }
   svcChips.forEach(function(chip){
     if(chip === moreBtn) return;
@@ -309,6 +312,11 @@
     btn.addEventListener('click', function(){ setPetType(btn.getAttribute('data-pet')); });
   });
 
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   function setFieldError(name, msg) {
     var field = form.querySelector('[name="' + name + '"]');
     if (!field) return;
@@ -323,17 +331,209 @@
     err.textContent = msg || '';
     err.style.display = msg ? 'block' : 'none';
   }
+
   function clearErrors() {
     form.querySelectorAll('.is-invalid').forEach(function(el){ el.classList.remove('is-invalid'); });
     form.querySelectorAll('.field-error').forEach(function(el){ el.textContent = ''; el.style.display = 'none'; });
     if (formError) { formError.textContent = ''; formError.style.display = 'none'; }
   }
 
+  /* ---- Live Interactive Quote Summary ---- */
+  function updateQuoteSummary() {
+    var summaryContainer = document.getElementById('quoteSummaryContent');
+    if (!summaryContainer || !form) return;
+
+    var svc = fService ? fService.value : 'shower';
+    var svcName = EXTRA_SERVICES[svc] || ({
+      shower: 'Shower Screen',
+      petdoor: 'Cat / Dog Door',
+      mirror: 'Mirror',
+      splashback: 'Splashback'
+    }[svc] || svc);
+
+    var items = [];
+
+    // Service
+    items.push({ label: 'Service', val: svcName });
+
+    // Job Type & Location
+    var jobType = document.getElementById('fJobType') ? document.getElementById('fJobType').value : '';
+    if (jobType) items.push({ label: 'Project Type', val: jobType });
+
+    var loc = document.getElementById('fLocation') ? document.getElementById('fLocation').value.trim() : '';
+    if (loc) items.push({ label: 'Location', val: loc });
+
+    // Service-specific
+    if (svc === 'shower') {
+      var shFrame = document.getElementById('fShFrame') ? document.getElementById('fShFrame').value : '';
+      if (shFrame) items.push({ label: 'Frame Selection', val: shFrame });
+
+      var shL = document.getElementById('fShLength') ? document.getElementById('fShLength').value.trim() : '';
+      var shW = document.getElementById('fShWidth') ? document.getElementById('fShWidth').value.trim() : '';
+      var shH = document.getElementById('fShHeight') ? document.getElementById('fShHeight').value.trim() : '';
+      if (shL || shW || shH) {
+        items.push({ label: 'Measurements (mm)', val: (shL || '—') + 'mm (L) × ' + (shW || '—') + 'mm (W) × ' + (shH || '—') + 'mm (H)' });
+      }
+
+      var shGlass = document.getElementById('fShGlass') ? document.getElementById('fShGlass').value : '';
+      if (shGlass) items.push({ label: 'Glass Preference', val: shGlass });
+    } else if (svc === 'petdoor') {
+      var petType = document.getElementById('fPetType') ? document.getElementById('fPetType').value : 'dog';
+      items.push({ label: 'Pet Door Type', val: petType === 'cat' ? 'Cat' : 'Dog' });
+
+      if (petType === 'dog') {
+        var dogSize = document.getElementById('fDogSize') ? document.getElementById('fDogSize').value : '';
+        if (dogSize) items.push({ label: 'Dog Size', val: dogSize });
+        var dogBreed = document.getElementById('fDogBreed') ? document.getElementById('fDogBreed').value.trim() : '';
+        if (dogBreed) items.push({ label: 'Breed', val: dogBreed });
+
+        var petW = document.getElementById('fPetWidth') ? document.getElementById('fPetWidth').value.trim() : '';
+        var petH = document.getElementById('fPetHeight') ? document.getElementById('fPetHeight').value.trim() : '';
+        if (petW || petH) {
+          items.push({ label: 'Opening (mm)', val: (petW || '—') + 'mm (W) × ' + (petH || '—') + 'mm (H)' });
+        }
+      } else {
+        var catBreed = document.getElementById('fCatBreed') ? document.getElementById('fCatBreed').value.trim() : '';
+        if (catBreed) items.push({ label: 'Cat Breed', val: catBreed });
+      }
+
+      var proxLoc = document.getElementById('fProxLocation') ? document.getElementById('fProxLocation').value : '';
+      if (proxLoc) items.push({ label: 'Proximity Reader', val: proxLoc });
+
+      var reglazing = document.getElementById('fReglazing') ? document.getElementById('fReglazing').value : '';
+      if (reglazing) items.push({ label: 'Reglazing Option', val: reglazing });
+    } else if (svc === 'mirror') {
+      var mType = document.getElementById('fMirrorType') ? document.getElementById('fMirrorType').value : '';
+      if (mType) items.push({ label: 'Mirror Type', val: mType });
+
+      var mW = document.getElementById('fMirrorWidth') ? document.getElementById('fMirrorWidth').value.trim() : '';
+      var mH = document.getElementById('fMirrorHeight') ? document.getElementById('fMirrorHeight').value.trim() : '';
+      if (mW || mH) {
+        items.push({ label: 'Measurements (mm)', val: (mW || '—') + 'mm (W) × ' + (mH || '—') + 'mm (H)' });
+      }
+
+      var mFinish = document.getElementById('fMirrorFinish') ? document.getElementById('fMirrorFinish').value : '';
+      if (mFinish) items.push({ label: 'Design / Finishing', val: mFinish });
+    } else if (svc === 'splashback') {
+      var sbW = document.getElementById('fSbWidth') ? document.getElementById('fSbWidth').value.trim() : '';
+      var sbH = document.getElementById('fSbHeight') ? document.getElementById('fSbHeight').value.trim() : '';
+      if (sbW || sbH) {
+        items.push({ label: 'Measurements (mm)', val: (sbW || '—') + 'mm (W) × ' + (sbH || '—') + 'mm (H)' });
+      }
+
+      var sbFinish = document.getElementById('fSbFinish') ? document.getElementById('fSbFinish').value : '';
+      if (sbFinish) items.push({ label: 'Finish Type', val: sbFinish });
+
+      var sbBrand = document.getElementById('fSbBrand') ? document.getElementById('fSbBrand').value.trim() : '';
+      if (sbBrand) items.push({ label: 'Dulux Brand', val: sbBrand });
+
+      var sbColour = document.getElementById('fSbColour') ? document.getElementById('fSbColour').value.trim() : '';
+      if (sbColour) items.push({ label: 'Dulux Colour', val: sbColour });
+
+      var sbCode = document.getElementById('fSbColourCode') ? document.getElementById('fSbColourCode').value.trim() : '';
+      if (sbCode) items.push({ label: 'Dulux Colour Code', val: sbCode });
+    } else {
+      // Pool fencing, balustrade, privacy, repairs
+      var exLen = document.getElementById('fExLength') ? document.getElementById('fExLength').value.trim() : '';
+      if (exLen) items.push({ label: 'Length (mm)', val: exLen + 'mm' });
+
+      var exW = document.getElementById('fExWidth') ? document.getElementById('fExWidth').value.trim() : '';
+      var exH = document.getElementById('fExHeight') ? document.getElementById('fExHeight').value.trim() : '';
+      if (exW || exH) {
+        items.push({ label: 'Approx Dimensions (mm)', val: (exW || '—') + 'mm (W) × ' + (exH || '—') + 'mm (H)' });
+      }
+    }
+
+    // Active photo file
+    var activePhotoInput = form.querySelector('.svc-group:not([hidden]) input[type="file"][name="photo"]');
+    if (activePhotoInput && activePhotoInput.files && activePhotoInput.files[0]) {
+      items.push({ label: 'Uploaded Photo', val: '📎 ' + activePhotoInput.files[0].name });
+    }
+
+    // Comments / extra instructions
+    var msg = document.getElementById('fMsg') ? document.getElementById('fMsg').value.trim() : '';
+    if (msg) {
+      items.push({ label: 'Comments / Instructions', val: msg.length > 70 ? (msg.slice(0, 70) + '…') : msg });
+    }
+
+    // Customer Info
+    var cName = document.getElementById('fName') ? document.getElementById('fName').value.trim() : '';
+    var cPhone = document.getElementById('fPhone') ? document.getElementById('fPhone').value.trim() : '';
+    var cSub = document.getElementById('fSuburb') ? document.getElementById('fSuburb').value.trim() : '';
+    if (cName || cPhone || cSub) {
+      items.push({ label: 'Customer Details', val: [cName, cPhone, cSub].filter(Boolean).join(' · ') });
+    }
+
+    if (items.length === 0) {
+      summaryContainer.innerHTML = '<span class="qs-empty">Enter your measurements and options above to preview your quote summary.</span>';
+      return;
+    }
+
+    summaryContainer.innerHTML = items.map(function(it) {
+      return '<div class="qs-item">' +
+               '<span class="qs-item-label">' + esc(it.label) + '</span>' +
+               '<span class="qs-item-val">' + esc(it.val) + '</span>' +
+             '</div>';
+    }).join('');
+  }
+
+  form.addEventListener('input', updateQuoteSummary);
+  form.addEventListener('change', updateQuoteSummary);
+  updateQuoteSummary();
+
   form.addEventListener('submit', function(e){
     e.preventDefault();
     if (submitting) return;
     clearErrors();
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+    var hasValidationErr = false;
+
+    // Validate Length if provided
+    var exLenInput = document.getElementById('fExLength');
+    var isExtra = !!EXTRA_SERVICES[fService.value];
+    if (isExtra && exLenInput) {
+      var exLenVal = exLenInput.value.trim();
+      if (!exLenVal) {
+        setFieldError('length', 'Please enter the required length in mm.');
+        hasValidationErr = true;
+      } else if (isNaN(Number(exLenVal)) || Number(exLenVal) <= 0) {
+        setFieldError('length', 'Length must be a positive number in mm.');
+        hasValidationErr = true;
+      }
+    }
+
+    // Validate dimensions if filled
+    ['fShLength', 'fShWidth', 'fShHeight', 'fMirrorWidth', 'fMirrorHeight',
+     'fSbWidth', 'fSbHeight', 'fPetWidth', 'fPetHeight', 'fExWidth', 'fExHeight'].forEach(function(id){
+      var inp = document.getElementById(id);
+      if (inp && inp.value.trim()) {
+        var n = Number(inp.value.trim());
+        if (isNaN(n) || n <= 0) {
+          setFieldError(inp.name, 'Measurement must be a positive number in mm.');
+          hasValidationErr = true;
+        }
+      }
+    });
+
+    // Validate active photo upload
+    var activePhoto = form.querySelector('.svc-group:not([hidden]) input[type="file"][name="photo"]');
+    if (activePhoto && activePhoto.files && activePhoto.files[0]) {
+      var photoFile = activePhoto.files[0];
+      if (!/^image\/(jpeg|png|webp|gif|heic|heif)$/i.test(photoFile.type)) {
+        setFieldError('photo', 'Please select a valid image file (JPEG, PNG, WEBP).');
+        hasValidationErr = true;
+      } else if (photoFile.size > 8 * 1024 * 1024) {
+        setFieldError('photo', 'Photo file size exceeds 8MB limit.');
+        hasValidationErr = true;
+      }
+    }
+
+    if (hasValidationErr || !form.checkValidity()) {
+      form.reportValidity();
+      var firstInv = form.querySelector('.is-invalid');
+      if (firstInv) firstInv.focus();
+      return;
+    }
 
     submitting = true;
     submitBtn.classList.add('is-busy');
@@ -342,14 +542,18 @@
     var origLabel = label.textContent;
     label.textContent = 'Sending\u2026';
 
-    // Multipart FormData so the optional photo upload travels with the rest of the fields
+    // Multipart FormData
     var data = new FormData(form);
-    // Checkbox doesn't submit a value when unchecked — normalise explicitly
     data.set('emergency', document.getElementById('fEmergency').checked ? 'true' : 'false');
 
-    // Determine API base: same-origin when served by Node, else local file fallback
-    var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3001' : '';
+    // Ensure photo from active group is explicitly set
+    if (activePhoto && activePhoto.files && activePhoto.files[0]) {
+      data.set('photo', activePhoto.files[0]);
+    } else {
+      data.delete('photo');
+    }
 
+    var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3001' : '';
     var quoteEndpoint = apiBase + '/api/quote';
     console.log('[QUOTE FORM] Submitting quote enquiry to:', quoteEndpoint);
 
@@ -362,7 +566,6 @@
     })
     .then(function(result) {
       if (result.ok) {
-        // Success
         form.reset();
         form.style.display = 'none';
         var msgSpan = success.querySelector('span');
@@ -374,12 +577,10 @@
         success.classList.add('show');
         success.focus();
       } else {
-        // Validation / server error
         if (result.data.fields) {
           Object.keys(result.data.fields).forEach(function(k) {
             setFieldError(k, result.data.fields[k]);
           });
-          // Focus first invalid field
           var first = form.querySelector('.is-invalid');
           if (first) first.focus();
         } else {
@@ -404,16 +605,106 @@
     });
   });
 
-  /* ---- Before & After Transformation Slider ---- */
+  /* ---- Before & After Reusable Transformation Slideshow ---- */
   (function(){
+    // Reusable data structure for before/after projects
+    var projects = [
+      {
+        id: 'shower-screen',
+        title: 'Frameless Shower Screen Transformation',
+        description: 'Replacing dated framed aluminium and frosted glass with custom 10mm toughened frameless glass transforms light transmission and perceived bathroom space.',
+        before: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1400&auto=format&fit=crop',
+        after: 'https://images.unsplash.com/photo-1771929662486-f793e08f0f16?q=80&w=1400&auto=format&fit=crop',
+        beforeAlt: 'Before: Dated framed bathroom with heavy aluminium surround',
+        afterAlt: 'After: Custom architectural frameless glass shower screen'
+      },
+      {
+        id: 'splashback',
+        title: 'Architectural Kitchen Splashback',
+        description: 'Removing dated tiled grout lines and installing a seamless, custom heat-toughened glass splashback in Dulux matched colour creates an immaculate contemporary finish.',
+        before: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=1400&auto=format&fit=crop',
+        after: 'https://images.unsplash.com/photo-1746439305879-74bb5db52ee2?q=80&w=1400&auto=format&fit=crop',
+        beforeAlt: 'Before: Dated kitchen tiled splashback with visible grout joints',
+        afterAlt: 'After: Modern seamless toughened glass splashback installation'
+      }
+    ];
+
+    window.BEFORE_AFTER_PROJECTS = projects; // Expose reusable structure
+
+    var currentIdx = 0;
+    var counterEl = document.getElementById('baCounter');
+    var titleEl = document.getElementById('baProjTitle');
+    var descEl = document.getElementById('baProjDesc');
+    var prevBtn = document.getElementById('baPrevBtn');
+    var nextBtn = document.getElementById('baNextBtn');
+    var dotsContainer = document.getElementById('baDots');
+
     var container = document.getElementById('baContainer');
     var beforeLayer = document.getElementById('baBeforeLayer');
     var handle = document.getElementById('baHandle');
-    if(!container || !beforeLayer || !handle) return;
+    var beforeImg = document.getElementById('baBeforeImg');
+    var afterImg = document.getElementById('baAfterImg');
 
+    if (!container || !beforeLayer || !handle) return;
+
+    function renderDots() {
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = projects.map(function(p, i) {
+        return '<button type="button" class="ba-dot' + (i === currentIdx ? ' active' : '') + '" data-idx="' + i + '" aria-label="Go to project ' + (i + 1) + '"></button>';
+      }).join('');
+      dotsContainer.querySelectorAll('.ba-dot').forEach(function(dot) {
+        dot.addEventListener('click', function() {
+          var idx = parseInt(dot.dataset.idx, 10);
+          showProject(idx);
+        });
+      });
+    }
+
+    function showProject(idx) {
+      if (idx < 0) idx = projects.length - 1;
+      if (idx >= projects.length) idx = 0;
+      currentIdx = idx;
+
+      var p = projects[currentIdx];
+      if (counterEl) counterEl.textContent = 'Project ' + (currentIdx + 1) + ' of ' + projects.length;
+      if (titleEl) titleEl.textContent = p.title;
+      if (descEl) descEl.textContent = p.description;
+
+      if (beforeImg) {
+        beforeImg.src = p.before;
+        beforeImg.alt = p.beforeAlt || p.title;
+      }
+      if (afterImg) {
+        afterImg.src = p.after;
+        afterImg.alt = p.afterAlt || p.title;
+      }
+
+      // Reset slider to 50%
+      beforeLayer.style.width = '50%';
+      handle.style.left = '50%';
+
+      // Update dots
+      if (dotsContainer) {
+        dotsContainer.querySelectorAll('.ba-dot').forEach(function(d, i) {
+          d.classList.toggle('active', i === currentIdx);
+        });
+      }
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() { showProject(currentIdx - 1); });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() { showProject(currentIdx + 1); });
+    }
+
+    renderDots();
+    showProject(0);
+
+    // Interactive split slider drag
     var dragging = false;
 
-    function setPosition(xPos){
+    function setPosition(xPos) {
       var rect = container.getBoundingClientRect();
       var offsetX = Math.max(0, Math.min(xPos - rect.left, rect.width));
       var percentage = (offsetX / rect.width) * 100;
@@ -421,19 +712,19 @@
       handle.style.left = percentage + '%';
     }
 
-    function onPointerMove(e){
-      if(!dragging) return;
+    function onPointerMove(e) {
+      if (!dragging) return;
       var clientX = e.touches ? e.touches[0].clientX : e.clientX;
       setPosition(clientX);
     }
 
-    function onPointerDown(e){
+    function onPointerDown(e) {
       dragging = true;
       var clientX = e.touches ? e.touches[0].clientX : e.clientX;
       setPosition(clientX);
     }
 
-    function onPointerUp(){
+    function onPointerUp() {
       dragging = false;
     }
 

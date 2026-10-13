@@ -484,12 +484,358 @@ async function runAllTests() {
     const diagDevRes = await request('/api/notification-test'); // In test/dev mode
     recordTest(28, 'Diagnostic endpoint responds in non-production test mode', diagDevRes.status === 200 || diagDevRes.status === 500, 'Diagnostic verified');
 
-    // Clean up test photo lead if created
-    if (photoLeadId) {
-      db.delete(photoLeadId);
+    // =========================================================================
+    // NEW CLIENT REQUIREMENT TESTS (29 - 39)
+    // =========================================================================
+
+    // Refresh admin token as test 27 invalidated sessions during password rotation test
+    const freshLoginRes = await request('/admin/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: adminUser, password: process.env.ADMIN_PASS })
+    });
+    if (freshLoginRes.status === 200 && freshLoginRes.json && freshLoginRes.json.token) {
+      adminToken = freshLoginRes.json.token;
     }
-    if (testQuoteId) {
-      db.delete(testQuoteId);
+
+    // 29. Shower screen with "Fully Frameless Sliding" and optional photo upload
+    const showerPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+    const showerReq = createMultipartBody({
+      name: 'Shower Client',
+      phone: '0497 470 036',
+      email: 'Glen@completeglassinnovations.com.au',
+      suburb: 'Werribee',
+      service: 'shower',
+      shower_frame: 'Fully Frameless Sliding',
+      shower_length: '1200',
+      shower_width: '900',
+      shower_height: '2100',
+      shower_glass: 'Obscure Laminated',
+      shower_unit: 'mm',
+      message: 'Need urgent measure for ensuite shower'
+    }, 'photo', 'shower_bathroom.png', showerPng, 'image/png');
+
+    const showerRes = await request('/api/quote', {
+      method: 'POST',
+      headers: showerReq.headers,
+      body: showerReq.body
+    });
+    const showerSaved = showerRes.status === 201 && showerRes.json && showerRes.json.id;
+    const showerLeadId = showerSaved ? showerRes.json.id : null;
+    const showerLead = showerLeadId ? db.findById(showerLeadId) : null;
+    const showerFrameOk = showerLead && showerLead.details && showerLead.details.shower_frame === 'Fully Frameless Sliding';
+    const showerGlassOk = showerLead && showerLead.details && showerLead.details.shower_glass === 'Obscure Laminated';
+    const showerPhotoOk = showerLead && showerLead.photo && fs.existsSync(path.join(__dirname, 'data', 'uploads', showerLead.photo));
+    recordTest(29, 'Shower screen with Fully Frameless Sliding, Obscure Laminated & photo upload persisted', showerSaved && showerFrameOk && showerGlassOk && showerPhotoOk, `Lead #${showerLeadId}, Frame: ${showerLead?.details?.shower_frame}`);
+
+    // 30. Pet door with Dog/Cat, "No Proximity Reader", and "Reglazing Required"
+    const petdoorReq = createMultipartBody({
+      name: 'Pet Owner',
+      phone: '0411 222 333',
+      suburb: 'Werribee',
+      service: 'petdoor',
+      pet_type: 'dog',
+      pet_dog_size: 'Medium (200-300mm opening)',
+      pet_dog_breed: 'Cavoodle',
+      pet_width: '250',
+      pet_height: '300',
+      pet_unit: 'mm',
+      pet_prox_location: 'No Proximity Reader',
+      pet_reglazing: 'Reglazing Required',
+      message: 'Need dog door fitted into laundry sliding door'
+    });
+    const petdoorRes = await request('/api/quote', {
+      method: 'POST',
+      headers: petdoorReq.headers,
+      body: petdoorReq.body
+    });
+    const petSaved = petdoorRes.status === 201 && petdoorRes.json && petdoorRes.json.id;
+    const petLeadId = petSaved ? petdoorRes.json.id : null;
+    const petLead = petLeadId ? db.findById(petLeadId) : null;
+    const petProxOk = petLead && petLead.details && petLead.details.pet_prox_location === 'No Proximity Reader';
+    const petReglazeOk = petLead && petLead.details && petLead.details.pet_reglazing === 'Reglazing Required';
+    recordTest(30, 'Pet door with No Proximity Reader and Reglazing Required persisted', petSaved && petProxOk && petReglazeOk, `Lead #${petLeadId}, Reglaze: ${petLead?.details?.pet_reglazing}`);
+
+    // 31. Mirror with "Sliding Mirror Door" and "Mirror"
+    const mirrorReq = createMultipartBody({
+      name: 'Mirror Client',
+      phone: '0422 333 444',
+      suburb: 'Point Cook',
+      service: 'mirror',
+      mirror_type: 'Sliding Mirror Door',
+      mirror_width: '1800',
+      mirror_height: '2400',
+      mirror_unit: 'mm',
+      mirror_finish: 'Standard polished'
+    });
+    const mirrorRes = await request('/api/quote', {
+      method: 'POST',
+      headers: mirrorReq.headers,
+      body: mirrorReq.body
+    });
+    const mirrorSaved = mirrorRes.status === 201 && mirrorRes.json && mirrorRes.json.id;
+    const mirrorLeadId = mirrorSaved ? mirrorRes.json.id : null;
+    const mirrorLead = mirrorLeadId ? db.findById(mirrorLeadId) : null;
+    const mirrorTypeOk = mirrorLead && mirrorLead.details && mirrorLead.details.mirror_type === 'Sliding Mirror Door';
+    recordTest(31, 'Mirror with Sliding Mirror Door type persisted', mirrorSaved && mirrorTypeOk, `Lead #${mirrorLeadId}, Type: ${mirrorLead?.details?.mirror_type}`);
+
+    // 32. Splashback with Brand (Dulux), Colour (Lexicon Quarter), Colour Code (SW1G2)
+    const splashbackReq = createMultipartBody({
+      name: 'Kitchen Renovator',
+      phone: '0433 444 555',
+      suburb: 'Williamstown',
+      service: 'splashback',
+      splashback_finish: 'Flat colour',
+      splashback_brand: 'Dulux',
+      splashback_colour: 'Lexicon Quarter',
+      splashback_colour_code: 'SW1G2',
+      splashback_width: '3000',
+      splashback_height: '750',
+      splashback_unit: 'mm'
+    });
+    const splashbackRes = await request('/api/quote', {
+      method: 'POST',
+      headers: splashbackReq.headers,
+      body: splashbackReq.body
+    });
+    const splashSaved = splashbackRes.status === 201 && splashbackRes.json && splashbackRes.json.id;
+    const splashLeadId = splashSaved ? splashbackRes.json.id : null;
+    const splashLead = splashLeadId ? db.findById(splashLeadId) : null;
+    const splashBrandOk = splashLead && splashLead.details && splashLead.details.splashback_brand === 'Dulux';
+    const splashColourOk = splashLead && splashLead.details && splashLead.details.splashback_colour === 'Lexicon Quarter';
+    const splashCodeOk = splashLead && splashLead.details && splashLead.details.splashback_colour_code === 'SW1G2';
+    recordTest(32, 'Splashback with Dulux Brand, Colour, and Colour Code persisted', splashSaved && splashBrandOk && splashColourOk && splashCodeOk, `Lead #${splashLeadId}, Brand: ${splashLead?.details?.splashback_brand}`);
+
+    // 33. Length fields in mm (Pool fencing, Balustrades, Privacy screens, Window repairs)
+    const poolFenceReq = createMultipartBody({
+      name: 'Pool Fencing Client',
+      phone: '0444 555 666',
+      suburb: 'Yarraville',
+      service: 'poolfencing',
+      length: '8500',
+      extra_width: '8500',
+      extra_height: '1200',
+      extra_unit: 'mm'
+    });
+    const poolFenceRes = await request('/api/quote', {
+      method: 'POST',
+      headers: poolFenceReq.headers,
+      body: poolFenceReq.body
+    });
+    const poolSaved = poolFenceRes.status === 201 && poolFenceRes.json && poolFenceRes.json.id;
+    const poolLeadId = poolSaved ? poolFenceRes.json.id : null;
+    const poolLead = poolLeadId ? db.findById(poolLeadId) : null;
+    const poolLengthOk = poolLead && poolLead.details && (poolLead.details.length === '8500' || poolLead.details.extra_length === '8500');
+    recordTest(33, 'Service length in mm saved and persisted for pool fencing/balustrades', poolSaved && poolLengthOk, `Lead #${poolLeadId}, Length: ${poolLead?.details?.length}mm`);
+
+    // 34. Comments and extra instructions saved with quote
+    const commentsReq = createMultipartBody({
+      name: 'Comment Test Client',
+      phone: '0455 666 777',
+      suburb: 'Seddon',
+      service: 'repairs',
+      length: '1500',
+      message: 'Comments and extra instructions: Please call after 2pm, narrow side gate access.'
+    });
+    const commentsRes = await request('/api/quote', {
+      method: 'POST',
+      headers: commentsReq.headers,
+      body: commentsReq.body
+    });
+    const commentsSaved = commentsRes.status === 201 && commentsRes.json && commentsRes.json.id;
+    const commentsLeadId = commentsSaved ? commentsRes.json.id : null;
+    const commentsLead = commentsLeadId ? db.findById(commentsLeadId) : null;
+    const commentsOk = commentsLead && commentsLead.message && commentsLead.message.includes('Comments and extra instructions');
+    recordTest(34, 'Comments and extra instructions preserved and saved with enquiry', commentsSaved && commentsOk, `Lead #${commentsLeadId}`);
+
+    // 35. Length validation: non-positive or negative length rejected with 422
+    const invalidLengthReq = createMultipartBody({
+      name: 'Invalid Length User',
+      phone: '0466 777 888',
+      suburb: 'Footscray',
+      service: 'privacy',
+      length: '-500'
+    });
+    const invalidLengthRes = await request('/api/quote', {
+      method: 'POST',
+      headers: invalidLengthReq.headers,
+      body: invalidLengthReq.body
+    });
+    const invalidLengthRejected = invalidLengthRes.status === 422 && invalidLengthRes.json && invalidLengthRes.json.fields && invalidLengthRes.json.fields.length;
+    recordTest(35, 'Invalid / negative length rejected with 422 validation error', invalidLengthRejected, `Status ${invalidLengthRes.status}`);
+
+    // 36. Admin viewing of new fields via admin API
+    const adminEnquiryRes = await request(`/admin/api/enquiries/${splashLeadId}`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const adminCanViewNewFields = adminEnquiryRes.status === 200 && adminEnquiryRes.json &&
+                                  adminEnquiryRes.json.data && adminEnquiryRes.json.data.details &&
+                                  adminEnquiryRes.json.data.details.splashback_brand === 'Dulux' &&
+                                  adminEnquiryRes.json.data.details.splashback_colour_code === 'SW1G2';
+    recordTest(36, 'Admin dashboard API retrieves all newly added quote fields accurately', adminCanViewNewFields, 'Dulux brand & colour code verified in admin data');
+
+    // 37. Customer review lifecycle: submit (pending) -> approved -> public display
+    const revSubmission = createMultipartBody({
+      name: 'Lifecycle Reviewer',
+      suburb: 'Werribee',
+      service: 'Shower Screen',
+      rating: '5',
+      review: 'Exceptional frameless shower screen installation! Absolutely delighted with the craftsmanship.'
+    });
+    const revSubmitRes = await request('/api/reviews', {
+      method: 'POST',
+      headers: revSubmission.headers,
+      body: revSubmission.body
+    });
+    const revSubmitted = revSubmitRes.status === 201 && revSubmitRes.json && revSubmitRes.json.id;
+    const testLifecycleRevId = revSubmitted ? revSubmitRes.json.id : null;
+    const revInDb = testLifecycleRevId ? db.findReviewById(testLifecycleRevId) : null;
+    const revStartsPending = revInDb && revInDb.status === 'pending';
+
+    // Approve review via admin
+    const reviewApproveRes = await request(`/admin/api/reviews/${testLifecycleRevId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: 'approved' })
+    });
+    const approveOk = reviewApproveRes.status === 200;
+
+    // Check public reviews API includes approved review
+    const publicRevRes = await request('/api/reviews');
+    const isPublic = publicRevRes.status === 200 && publicRevRes.json && Array.isArray(publicRevRes.json.data) &&
+                     publicRevRes.json.data.some(r => r.id === testLifecycleRevId);
+    recordTest(37, 'Review workflow: submission starts pending, admin approves, public API displays', revStartsPending && approveOk && isPublic, `Review #${testLifecycleRevId} approved & visible`);
+
+    // 38. Notification resilience: SQLite persistence succeeds even if SMS is unconfigured or fails
+    const resilienceReq = createMultipartBody({
+      name: 'Resilience Test Client',
+      phone: '0477 888 999',
+      suburb: 'Altona',
+      service: 'balustrade',
+      length: '4200'
+    });
+    const resilienceRes = await request('/api/quote', {
+      method: 'POST',
+      headers: resilienceReq.headers,
+      body: resilienceReq.body
+    });
+    const resilienceSaved = resilienceRes.status === 201 && resilienceRes.json && resilienceRes.json.id;
+    const resilienceLeadId = resilienceSaved ? resilienceRes.json.id : null;
+    const resilienceLead = resilienceLeadId ? db.findById(resilienceLeadId) : null;
+    recordTest(38, 'Quote persistence succeeds reliably regardless of SMS/Email status', resilienceSaved && Boolean(resilienceLead), `Lead #${resilienceLeadId} saved to SQLite`);
+
+    // 39. SQLite integrity check
+    const integrityResult = db.checkIntegrity();
+    recordTest(39, 'SQLite database integrity check passes', integrityResult === 'ok', `integrity_check=${integrityResult}`);
+
+    // =========================================================================
+    // ADVANCED NOTIFICATION AUDIT TESTS (40 - 45)
+    // =========================================================================
+
+    // 40. Notification status tracking: unconfigured providers safely record 'not_configured'
+    const unconfigReq = createMultipartBody({
+      name: 'Unconfig Test Customer',
+      phone: '0411 222 333',
+      suburb: 'Yarraville',
+      service: 'shower'
+    });
+    const unconfigRes = await request('/api/quote', {
+      method: 'POST',
+      headers: unconfigReq.headers,
+      body: unconfigReq.body
+    });
+    const unconfigLeadId = unconfigRes.json ? unconfigRes.json.id : null;
+    const unconfigLead = unconfigLeadId ? db.findById(unconfigLeadId) : null;
+    const unconfigStatusOk = unconfigLead && (unconfigLead.sms_status === 'not_configured' || unconfigLead.sms_status === 'pending');
+    recordTest(40, 'Notification status tracking: unconfigured providers safely recorded', Boolean(unconfigLead && unconfigStatusOk), `Lead #${unconfigLeadId}, SMS status: ${unconfigLead?.sms_status}`);
+
+    // 41. Mocked successful email provider updates email_status to 'sent' and sets notified_at
+    let testNotifyLead = db.insert({
+      name: 'Notification Test User',
+      phone: '0422 333 444',
+      email: 'test.user@example.com',
+      suburb: 'Williamstown',
+      service: 'splashback',
+      details: { splashback_brand: 'Dulux', splashback_colour: 'White on White', splashback_width: '1800', splashback_height: '650' },
+      message: 'Urgent install needed before weekend'
+    });
+
+    expressApp.sendNotificationEmail._mockTransporter = {
+      sendMail: async (opts) => {
+        return { messageId: '<mock-email-success@cgi.local>', accepted: [opts.to] };
+      }
+    };
+    const emailSuccessRes = await expressApp.sendNotificationEmail(testNotifyLead, { force: true });
+    const leadAfterEmailSuccess = db.findById(testNotifyLead.id);
+    const emailSentOk = emailSuccessRes.status === 'sent' && leadAfterEmailSuccess.email_status === 'sent' && Boolean(leadAfterEmailSuccess.notified_at);
+    recordTest(41, 'Mocked successful email provider updates email_status to "sent" with timestamp', emailSentOk, `email_status=${leadAfterEmailSuccess?.email_status}`);
+
+    // 42. Mocked failed email provider updates email_status to 'failed' and records email_error without data loss
+    expressApp.sendNotificationEmail._mockTransporter = {
+      sendMail: async () => {
+        throw new Error('SMTP connection rejected: 535 Bad Credentials');
+      }
+    };
+    const emailFailRes = await expressApp.sendNotificationEmail(testNotifyLead, { force: true });
+    const leadAfterEmailFail = db.findById(testNotifyLead.id);
+    const emailFailOk = emailFailRes.status === 'failed' && leadAfterEmailFail.email_status === 'failed' && Boolean(leadAfterEmailFail.email_error);
+    recordTest(42, 'Mocked failed email provider safely sets email_status to "failed" and stores error', emailFailOk, `Error: ${leadAfterEmailFail?.email_error?.slice(0, 30)}...`);
+
+    // 43. Mocked successful SMS provider updates sms_status to 'sent' and verifies concise alert text
+    let mockSmsCaptured = null;
+    expressApp.sendNotificationSms._mockFetch = async (opts) => {
+      mockSmsCaptured = opts;
+      return { ok: true, sid: 'SM_mock_success_sid' };
+    };
+    const smsSuccessRes = await expressApp.sendNotificationSms(testNotifyLead, { force: true });
+    const leadAfterSmsSuccess = db.findById(testNotifyLead.id);
+    const smsSentOk = smsSuccessRes.status === 'sent' && leadAfterSmsSuccess.sms_status === 'sent' &&
+                      mockSmsCaptured && mockSmsCaptured.body && mockSmsCaptured.body.includes('CGI Alert') &&
+                      mockSmsCaptured.body.includes('/admin');
+    recordTest(43, 'Mocked successful SMS provider updates sms_status to "sent" with concise alert', smsSentOk, `sms_status=${leadAfterSmsSuccess?.sms_status}`);
+
+    // 44. Mocked failed SMS provider safely sets sms_status to 'failed' without breaking quote persistence
+    expressApp.sendNotificationSms._mockFetch = async () => {
+      throw new Error('Twilio error: Destination number blacklisted or unroutable');
+    };
+    const smsFailRes = await expressApp.sendNotificationSms(testNotifyLead, { force: true });
+    const leadAfterSmsFail = db.findById(testNotifyLead.id);
+    const smsFailOk = smsFailRes.status === 'failed' && leadAfterSmsFail.sms_status === 'failed' && Boolean(db.findById(testNotifyLead.id));
+    recordTest(44, 'Mocked failed SMS provider safely sets sms_status to "failed" without quote loss', smsFailOk, `sms_status=${leadAfterSmsFail?.sms_status}`);
+
+    // 45. Admin manual notification resend endpoint (POST /admin/api/enquiries/:id/resend-notification)
+    expressApp.sendNotificationEmail._mockTransporter = {
+      sendMail: async () => ({ messageId: '<mock-resend-success@cgi.local>' })
+    };
+    expressApp.sendNotificationSms._mockFetch = async () => ({ ok: true, sid: 'SM_resend_sid' });
+
+    const adminResendRes = await request(`/admin/api/enquiries/${testNotifyLead.id}/resend-notification`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const resendSuccess = adminResendRes.status === 200 && adminResendRes.json && adminResendRes.json.success === true &&
+                          adminResendRes.json.email && adminResendRes.json.email.status === 'sent' &&
+                          adminResendRes.json.sms && adminResendRes.json.sms.status === 'sent';
+    recordTest(45, 'Admin resend endpoint safely retries both notifications and updates database', resendSuccess, `Resend status=200 OK`);
+
+    // Reset mock hooks
+    expressApp.sendNotificationEmail._mockTransporter = null;
+    expressApp.sendNotificationSms._mockFetch = null;
+
+    // Clean up created test leads
+    [unconfigLeadId, testNotifyLead?.id].forEach(id => {
+      if (id) { try { db.delete(id); } catch {} }
+    });
+
+    // Clean up created test leads
+    [showerLeadId, petLeadId, mirrorLeadId, splashLeadId, poolLeadId, commentsLeadId, resilienceLeadId, photoLeadId, testQuoteId].forEach(id => {
+      if (id) { try { db.delete(id); } catch {} }
+    });
+    if (testLifecycleRevId) {
+      try { db.deleteReview(testLifecycleRevId); } catch {}
     }
 
   } catch (err) {
@@ -503,6 +849,7 @@ async function runAllTests() {
     console.log(`Passed: ${passedCount} / ${totalCount} (${Math.round((passedCount/totalCount)*100)}%)`);
     if (passedCount === totalCount) {
       console.log('ALL TESTS PASSED SUCCESSFULLY! BACKEND IS PRODUCTION-READY.');
+      process.exit(0);
     } else {
       console.error('SOME TESTS FAILED!');
       process.exit(1);
