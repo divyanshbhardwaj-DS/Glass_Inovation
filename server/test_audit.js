@@ -118,10 +118,11 @@ async function runAllTests() {
   let adminToken = '';
   let testQuoteId = null;
   let testReviewId = null;
+  let expressApp = null;
 
   try {
     // 1. Server Starts
-    const expressApp = require('./index'); // Express app instance
+    expressApp = require('./index'); // Express app instance
     // Note: server starts in index.js on PORT. Let's verify health check on the test port.
     await new Promise(r => setTimeout(r, 1000));
     
@@ -847,12 +848,21 @@ async function runAllTests() {
     const passedCount = results.filter(r => r.passed).length;
     const totalCount = results.length;
     console.log(`Passed: ${passedCount} / ${totalCount} (${Math.round((passedCount/totalCount)*100)}%)`);
-    if (passedCount === totalCount) {
-      console.log('ALL TESTS PASSED SUCCESSFULLY! BACKEND IS PRODUCTION-READY.');
-      process.exit(0);
+
+    const finish = () => {
+      if (passedCount === totalCount) {
+        console.log('ALL TESTS PASSED SUCCESSFULLY! BACKEND IS PRODUCTION-READY.');
+        process.exit(0);
+      } else {
+        console.error('SOME TESTS FAILED!');
+        process.exit(1);
+      }
+    };
+
+    if (expressApp && expressApp.closeServer) {
+      expressApp.closeServer(() => finish());
     } else {
-      console.error('SOME TESTS FAILED!');
-      process.exit(1);
+      finish();
     }
   }
 }

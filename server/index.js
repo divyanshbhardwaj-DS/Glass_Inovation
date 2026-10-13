@@ -405,7 +405,8 @@ app.post('/api/quote', quoteLimiter, (req, res) => {
       console.log(`[QUOTE] Saved quote ID: ${enquiry.id}`);
 
       // Asynchronous notifications (non-blocking)
-      sendNotificationEmail(enquiry).catch(() => {});
+      const clientOrigin = req.get('origin') || `${req.protocol}://${req.get('host')}`;
+      sendNotificationEmail(enquiry, { origin: clientOrigin }).catch(() => {});
       sendNotificationSms(enquiry).catch(() => {});
 
       return res.status(201).json({
@@ -789,7 +790,8 @@ app.post('/admin/api/enquiries/:id/resend-notification', adminLimiter, requireAd
 
     enquiry.photoUrl = enquiry.photo ? `${req.protocol}://${req.get('host')}/admin/uploads/${enquiry.photo}` : null;
 
-    const emailResult = await sendNotificationEmail(enquiry, { force: true });
+    const clientOrigin = req.get('origin') || `${req.protocol}://${req.get('host')}`;
+    const emailResult = await sendNotificationEmail(enquiry, { force: true, origin: clientOrigin });
     const smsResult = await sendNotificationSms(enquiry, { force: true });
     const updated = db.findById(id);
 
@@ -927,9 +929,10 @@ app.sendNotificationSms = sendNotificationSms;
 module.exports = app;
 
 // ─── Start ───────────────────────────────────────────────────────────────────
+let serverInstance = null;
 async function main() {
   await createTransporter();
-  app.listen(PORT, '0.0.0.0', () => {
+  serverInstance = app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n======================================================`);
     console.log(`  COMPLETE GLASS INNOVATIONS — FULL-STACK SERVER`);
     console.log(`======================================================`);
@@ -941,6 +944,14 @@ async function main() {
     console.log(`======================================================\n`);
   });
 }
+
+app.closeServer = (cb) => {
+  if (serverInstance) {
+    serverInstance.close(cb);
+  } else if (cb) {
+    cb();
+  }
+};
 
 main().catch(err => {
   console.error('Fatal error starting server:', err);

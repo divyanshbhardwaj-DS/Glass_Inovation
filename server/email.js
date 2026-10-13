@@ -225,7 +225,7 @@ async function sendEmailJSNotification(enquiry, options = {}) {
     return { success: false, status: 'invalid_enquiry', error: 'Enquiry record missing or unpersisted' };
   }
 
-  console.log(`[EMAILJS] Starting owner notification for quote #${enquiry.id}`);
+  console.log(`[EMAILJS] Attempting owner notification for quote #${enquiry.id}`);
 
   const serviceId  = (process.env.EMAILJS_SERVICE_ID || '').trim();
   const templateId = (process.env.EMAILJS_TEMPLATE_ID || '').trim();
@@ -260,15 +260,30 @@ async function sendEmailJSNotification(enquiry, options = {}) {
     const serviceLabel = SERVICE_LABELS[enquiry.service] || enquiry.service;
     const detailLines = buildDetailLines(enquiry);
 
+    // Formatted local submission time
+    let formattedTime = enquiry.created_at || '';
+    try {
+      if (enquiry.created_at) {
+        formattedTime = new Date(enquiry.created_at).toLocaleString('en-AU', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Australia/Melbourne'
+        });
+      }
+    } catch {
+      formattedTime = enquiry.created_at || '';
+    }
+
     const templateParams = {
       // Required template parameters matching saved EmailJS template
       enquiry_id: enquiry.id,
       enquiryId: enquiry.id,
       id: enquiry.id,
 
-      submission_time: enquiry.created_at,
-      submissionTime: enquiry.created_at,
+      submission_time: formattedTime,
+      submissionTime: formattedTime,
       submitted_at: enquiry.created_at,
+      created_at: enquiry.created_at,
 
       customer_name: enquiry.name,
       customerName: enquiry.name,
@@ -316,16 +331,27 @@ async function sendEmailJSNotification(enquiry, options = {}) {
       payload.accessToken = privateKey;
     }
 
+    // Determine request origin for EmailJS non-browser compatibility
+    const origin = (
+      options.origin ||
+      (process.env.APP_URL ? process.env.APP_URL.trim() : null) ||
+      'http://localhost:3001'
+    ).replace(/\/$/, '');
+
+    const requestHeaders = {
+      'Content-Type': 'application/json',
+      'Origin': origin,
+      'Referer': `${origin}/`,
+      'User-Agent': 'Complete-Glass-Innovations-Backend/1.0'
+    };
+
     let res;
     if (sendEmailJSNotification._mockFetch) {
       res = await sendEmailJSNotification._mockFetch(payload);
     } else {
       res = await fetch(EMAILJS_API_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Complete-Glass-Innovations-Backend/1.0'
-        },
+        headers: requestHeaders,
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000)
       });
@@ -333,11 +359,22 @@ async function sendEmailJSNotification(enquiry, options = {}) {
 
     if (!res.ok) {
       const errText = typeof res.text === 'function' ? await res.text().catch(() => '') : (res.statusText || 'Error');
-      const safeError = privateKey ? errText.split(privateKey).join('***') : errText;
-      throw new Error(`EmailJS HTTP ${res.status}: ${safeError || 'Request rejected'}`);
+      let safeError = privateKey ? errText.split(privateKey).join('***') : errText;
+      if (publicKey) safeError = safeError.split(publicKey).join('***');
+
+      let errorCategory = 'PROVIDER_ERROR';
+      if (res.status === 403) errorCategory = 'FORBIDDEN_PERMISSIONS_OR_KEY';
+      else if (res.status === 400) errorCategory = 'BAD_REQUEST_TEMPLATE_PARAMS';
+      else if (res.status === 401) errorCategory = 'UNAUTHORIZED_INVALID_CREDENTIALS';
+      else if (res.status === 404) errorCategory = 'SERVICE_OR_TEMPLATE_NOT_FOUND';
+      else if (res.status >= 500) errorCategory = 'EMAILJS_SERVER_ERROR';
+
+      console.error(`[EMAILJS] Notification attempt failed for quote #${enquiry.id} [Category: ${errorCategory}, Status: ${res.status}]: ${safeError}`);
+      throw new Error(`EmailJS HTTP ${res.status} [${errorCategory}]: ${safeError || 'Request rejected'}`);
     }
 
     const responseBody = typeof res.text === 'function' ? await res.text().catch(() => 'OK') : 'OK';
+    console.log(`[EMAILJS] Provider response status: HTTP ${res.status} ${res.statusText || 'OK'} for quote #${enquiry.id}`);
 
     db.updateNotificationStatus(enquiry.id, {
       email_status: 'sent',
@@ -345,7 +382,7 @@ async function sendEmailJSNotification(enquiry, options = {}) {
       notified_at: new Date().toISOString()
     });
 
-    console.log(`[EMAILJS] Notification sent successfully to ${recipient} (response: ${responseBody})`);
+    console.log(`[EMAILJS] Notification sent successfully for quote #${enquiry.id} to ${recipient} (response: ${responseBody.slice(0, 100)})`);
     return {
       success: true,
       status: 'sent',
@@ -357,20 +394,32 @@ async function sendEmailJSNotification(enquiry, options = {}) {
   } catch (err) {
     const rawMsg = err && err.message ? err.message : 'Unknown EmailJS error';
     const privateKey = (process.env.EMAILJS_PRIVATE_KEY || process.env.EMAILJS_ACCESS_TOKEN || '').trim();
-    const safeError = privateKey ? rawMsg.split(privateKey).join('***') : rawMsg;
+    const publicKey = (process.env.EMAILJS_PUBLIC_KEY || process.env.EMAILJS_USER_ID || '').trim();
+    let safeError = privateKey ? rawMsg.split(privateKey).join('***') : rawMsg;
+    if (publicKey) safeError = safeError.split(publicKey).join('***');
 
-    console.error(`[EMAILJS] Notification failed: ${safeError}`);
+    let errorCategory = 'UNHANDLED_EXCEPTION';
+    if (err.name === 'TimeoutError' || err.code === 'ETIMEDOUT') errorCategory = 'TIMEOUT';
+    else if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.code === 'UND_ERR_CONNECT_TIMEOUT') errorCategory = 'NETWORK_ERROR';
+    else if (safeError.includes('FORBIDDEN_PERMISSIONS_OR_KEY')) errorCategory = 'FORBIDDEN_PERMISSIONS_OR_KEY';
+    else if (safeError.includes('BAD_REQUEST_TEMPLATE_PARAMS')) errorCategory = 'BAD_REQUEST_TEMPLATE_PARAMS';
+    else if (safeError.includes('UNAUTHORIZED_INVALID_CREDENTIALS')) errorCategory = 'UNAUTHORIZED_INVALID_CREDENTIALS';
+    else if (safeError.includes('SERVICE_OR_TEMPLATE_NOT_FOUND')) errorCategory = 'SERVICE_OR_TEMPLATE_NOT_FOUND';
+    else if (safeError.includes('EMAILJS_SERVER_ERROR')) errorCategory = 'EMAILJS_SERVER_ERROR';
+
+    console.error(`[EMAILJS] Notification failed for quote #${enquiry.id} [Category: ${errorCategory}]: ${safeError}`);
 
     db.updateNotificationStatus(enquiry.id, {
       email_status: 'failed',
-      email_error: safeError.slice(0, 300)
+      email_error: `[${errorCategory}] ${safeError.slice(0, 250)}`
     });
 
     return {
       success: false,
       status: 'failed',
       provider: 'emailjs',
-      error: safeError
+      error: safeError,
+      category: errorCategory
     };
   }
 }
