@@ -63,233 +63,15 @@ if (NODE_ENV === 'development') {
 }
 
 // ─── Mailer ─────────────────────────────────────────────────────────────────
-let transporter = null;
-
-async function createTransporter() {
-  const hasSmtp = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-  if (!hasSmtp) {
-    return null;
-  }
-  const t = nodemailer.createTransport({
-    host:   process.env.SMTP_HOST,
-    port:   parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true' || parseInt(process.env.SMTP_PORT, 10) === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    connectionTimeout: 4000,
-    greetingTimeout: 4000,
-    socketTimeout: 4000,
-  });
-  return t;
-}
-
-// Build human-readable details summary
-function buildDetailLines(enquiry) {
-  const lines = [];
-  const d = enquiry.details || {};
-  switch (enquiry.service) {
-    case 'shower':
-      if (d.shower_frame) lines.push(`Frame type: ${d.shower_frame}`);
-      if (d.shower_length || d.shower_width || d.shower_height) {
-        lines.push(`Dimensions: ${d.shower_length || '—'}mm (L) × ${d.shower_width || '—'}mm (W) × ${d.shower_height || '—'}mm (H)`);
-      }
-      if (d.shower_glass) lines.push(`Glass preference: ${d.shower_glass}`);
-      break;
-    case 'petdoor':
-      lines.push(`Pet: ${d.pet_type === 'cat' ? 'Cat (standard size)' : 'Dog'}`);
-      if (d.pet_type === 'dog') {
-        if (d.pet_dog_size) lines.push(`Dog size: ${d.pet_dog_size}`);
-        if (d.pet_dog_breed) lines.push(`Breed: ${d.pet_dog_breed}`);
-        if (d.pet_width || d.pet_height) lines.push(`Opening: ${d.pet_width || '—'}mm × ${d.pet_height || '—'}mm`);
-      }
-      if (d.pet_type === 'cat' && d.pet_cat_breed) lines.push(`Cat breed: ${d.pet_cat_breed}`);
-      if (d.pet_prox_location) lines.push(`Prox reader: ${d.pet_prox_location}`);
-      if (d.pet_reglazing) lines.push(`Reglazing: ${d.pet_reglazing}`);
-      if (d.pet_location_detail) lines.push(`Location: ${d.pet_location_detail}`);
-      break;
-    case 'mirror':
-      if (d.mirror_type) lines.push(`Mirror type: ${d.mirror_type}`);
-      if (d.mirror_width || d.mirror_height) lines.push(`Approx size: ${d.mirror_width || '—'}mm × ${d.mirror_height || '—'}mm`);
-      if (d.mirror_finish) lines.push(`Design / finish: ${d.mirror_finish}`);
-      break;
-    case 'splashback':
-      if (d.splashback_width || d.splashback_height) lines.push(`Approx size: ${d.splashback_width || '—'}mm × ${d.splashback_height || '—'}mm`);
-      if (d.splashback_finish) lines.push(`Finish: ${d.splashback_finish}`);
-      if (d.splashback_brand) lines.push(`Brand: ${d.splashback_brand}`);
-      if (d.splashback_colour) lines.push(`Colour: ${d.splashback_colour}`);
-      if (d.splashback_colour_code) lines.push(`Colour code: ${d.splashback_colour_code}`);
-      break;
-    case 'poolfencing':
-    case 'balustrade':
-    case 'privacy':
-    case 'repairs': {
-      if (d.length || d.extra_length) lines.push(`Length: ${d.length || d.extra_length}mm`);
-      if (d.extra_width || d.extra_height) lines.push(`Approx size: ${d.extra_width || '—'}mm × ${d.extra_height || '—'}mm`);
-      break;
-    }
-  }
-
-  // Include length if entered on any service
-  if (d.length && !['poolfencing', 'balustrade', 'privacy', 'repairs'].includes(enquiry.service)) {
-    lines.push(`Length: ${d.length}mm`);
-  }
-
-  // Include any other custom details entered
-  Object.keys(d).forEach(k => {
-    if (!['shower_frame', 'shower_length', 'shower_width', 'shower_height', 'shower_unit', 'shower_glass',
-          'pet_type', 'pet_dog_size', 'pet_dog_breed', 'pet_unit', 'pet_width', 'pet_height', 'pet_cat_breed',
-          'pet_prox_location', 'pet_reglazing', 'pet_location_detail', 'mirror_type', 'mirror_unit',
-          'mirror_width', 'mirror_height', 'mirror_finish', 'splashback_unit', 'splashback_width',
-          'splashback_height', 'splashback_finish', 'splashback_brand', 'splashback_colour', 'splashback_colour_code',
-          'extra_unit', 'extra_width', 'extra_height', 'length', 'extra_length'].includes(k)) {
-      if (d[k]) lines.push(`${k}: ${d[k]}`);
-    }
-  });
-
-  return lines;
-}
-
-const SERVICE_LABELS = { shower: 'Shower Screen', petdoor: 'Cat / Dog Door', mirror: 'Mirror', splashback: 'Splashback', poolfencing: 'Pool Fencing', balustrade: 'Balustrades', privacy: 'Privacy Screens', repairs: 'Window Repairs' };
-
-async function sendNotificationEmail(enquiry, options = {}) {
-  console.log(`[EMAIL] Starting owner notification for quote #${enquiry.id}`);
-  const hasSmtp = Boolean(sendNotificationEmail._mockTransporter || (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS));
-  console.log(`[EMAIL] SMTP configured: ${hasSmtp}`);
-
-  if (!hasSmtp) {
-    db.updateNotificationStatus(enquiry.id, { email_status: 'not_configured' });
-    console.log(`[EMAIL] SMTP not configured in environment — marked as not_configured (quote #${enquiry.id} safely stored in database).`);
-    return { success: false, status: 'not_configured', reason: 'SMTP credentials not configured in environment' };
-  }
-
-  // Duplicate prevention: avoid re-sending unless explicitly forced (e.g. from Admin resend)
-  if (enquiry.email_status === 'sent' && !options.force) {
-    console.log(`[EMAIL] Notification already sent for enquiry #${enquiry.id} — skipping duplicate.`);
-    return { success: true, status: 'already_sent' };
-  }
-
-  try {
-    let t = sendNotificationEmail._mockTransporter || transporter;
-    if (!t) {
-      t = await createTransporter();
-    }
-    if (!t) {
-      db.updateNotificationStatus(enquiry.id, { email_status: 'not_configured' });
-      return { success: false, status: 'not_configured', reason: 'Failed to initialize transporter' };
-    }
-
-    const detailLines = buildDetailLines(enquiry);
-    const serviceLabel = SERVICE_LABELS[enquiry.service] || enquiry.service;
-    const subjectPrefix = enquiry.emergency ? '🚨 EMERGENCY — ' : '';
-    const subject = `${subjectPrefix}New Quote Enquiry #${enquiry.id} - Complete Glass Innovations`;
-
-    const textBody = [
-      'New customer quote enquiry received.',
-      '',
-      `Enquiry ID:  #${enquiry.id}`,
-      `Submitted:   ${enquiry.created_at}`,
-      '',
-      'CUSTOMER DETAILS:',
-      `Name:        ${enquiry.name}`,
-      `Phone:       ${enquiry.phone}`,
-      `Email:       ${enquiry.email || '—'}`,
-      `Suburb:      ${enquiry.suburb}`,
-      `Service:     ${serviceLabel}`,
-      `Job Type:    ${enquiry.jobType || enquiry.job_type || '—'}`,
-      `Location:    ${enquiry.location || '—'}`,
-      `Emergency:   ${enquiry.emergency ? 'Yes (Priority)' : 'No'}`,
-      '',
-      detailLines.length ? 'SERVICE SPECIFICATIONS & MEASUREMENTS (mm):\n' + detailLines.map(l => `• ${l}`).join('\n') + '\n' : '',
-      `Comments / Extra Instructions: ${enquiry.message || '(none provided)'}`,
-      '',
-      enquiry.photo ? `Customer Photo Attached: ${enquiry.photo} (view securely in Admin dashboard)` : 'No photo attached',
-      '',
-      'SECURE ADMIN REFERENCE:',
-      'View complete details and manage lead securely at: /admin',
-    ].filter(Boolean).join('\n');
-
-    const attachments = [];
-    if (enquiry.photo) {
-      const photoPath = path.join(UPLOAD_DIR, enquiry.photo);
-      if (fs.existsSync(photoPath)) {
-        attachments.push({
-          filename: enquiry.photo,
-          path: photoPath,
-          cid: 'enquiry_photo'
-        });
-      }
-    }
-
-    const htmlBody = `
-      <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;max-width:600px;margin:0 auto;background:#0B0C0E;color:#F1F3F6;padding:24px;border-radius:8px;border:1px solid #21242C;">
-        ${enquiry.emergency ? '<div style="background:#C8353A;color:#fff;padding:8px 14px;border-radius:6px;font-weight:700;margin-bottom:16px;">🚨 EMERGENCY / PRIORITY ENQUIRY</div>' : ''}
-        <h2 style="color:#C8353A;margin-top:0;">New Quote Enquiry #${enquiry.id}</h2>
-        <p style="color:#AEB4C0;font-size:14px;margin-bottom:20px;">Submitted: ${validator.escape(enquiry.created_at || '')}</p>
-        <table style="border-collapse:collapse;width:100%;font-size:15px;color:#F1F3F6;">
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;width:130px;">Customer</td><td style="padding:8px 0;font-weight:600;">${validator.escape(enquiry.name)}</td></tr>
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Phone</td><td style="padding:8px 0;"><a href="tel:${validator.escape(enquiry.phone)}" style="color:#8FB9C9;text-decoration:none;font-weight:600;">${validator.escape(enquiry.phone)}</a></td></tr>
-          ${enquiry.email ? `<tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Email</td><td style="padding:8px 0;"><a href="mailto:${validator.escape(enquiry.email)}" style="color:#8FB9C9;text-decoration:none;">${validator.escape(enquiry.email)}</a></td></tr>` : ''}
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Suburb</td><td style="padding:8px 0;">${validator.escape(enquiry.suburb)}</td></tr>
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Service</td><td style="padding:8px 0;color:#F25A54;font-weight:600;">${validator.escape(serviceLabel)}</td></tr>
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Job Type</td><td style="padding:8px 0;">${validator.escape(enquiry.jobType || enquiry.job_type || '—')}</td></tr>
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Location</td><td style="padding:8px 0;">${validator.escape(enquiry.location || '—')}</td></tr>
-          <tr><td style="padding:8px 14px 8px 0;color:#AEB4C0;">Priority</td><td style="padding:8px 0;">${enquiry.emergency ? '🚨 Emergency Priority' : 'Standard'}</td></tr>
-        </table>
-        ${detailLines.length ? `
-          <div style="margin-top:16px;background:#14161A;border:1px solid rgba(255,255,255,0.07);padding:14px 16px;border-radius:6px;">
-            <div style="font-size:12px;color:#828A96;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Measurements &amp; Selected Options (mm)</div>
-            <ul style="margin:0;padding-left:18px;font-size:14px;color:#F1F3F6;line-height:1.6;">
-              ${detailLines.map(l => `<li>${validator.escape(l)}</li>`).join('')}
-            </ul>
-          </div>
-        ` : ''}
-        ${enquiry.message ? `
-          <div style="margin-top:16px;background:#14161A;border:1px solid rgba(255,255,255,0.07);padding:14px 16px;border-radius:6px;">
-            <div style="font-size:12px;color:#828A96;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Comments &amp; Extra Instructions</div>
-            <p style="margin:0;white-space:pre-wrap;font-size:14px;color:#F1F3F6;">${validator.escape(enquiry.message)}</p>
-          </div>
-        ` : ''}
-        ${enquiry.photo ? `
-          <div style="margin-top:16px;padding:12px;background:#14161A;border-radius:6px;border:1px solid rgba(255,255,255,0.07);">
-            <div style="font-size:12px;color:#828A96;margin-bottom:4px;">📎 Customer Photo:</div>
-            <div style="font-size:13.5px;color:#F1F3F6;">Attached to this email. View and manage safely in the Admin dashboard.</div>
-          </div>
-        ` : ''}
-        <div style="margin-top:24px;border-top:1px solid #21242C;padding-top:16px;font-size:12px;color:#828A96;">
-          <div>Enquiry ID: #${enquiry.id} · Submitted: ${validator.escape(enquiry.created_at || '')}</div>
-          <div style="margin-top:6px;">Admin Access: <b>/admin</b> (Authorized login required)</div>
-        </div>
-      </div>
-    `;
-
-    await t.sendMail({
-      from: `"Complete Glass Innovations" <${SMTP_FROM}>`,
-      to:   OWNER_EMAIL,
-      subject,
-      text: textBody,
-      html: htmlBody,
-      attachments,
-    });
-
-    db.updateNotificationStatus(enquiry.id, {
-      email_status: 'sent',
-      email_error: null,
-      notified_at: new Date().toISOString()
-    });
-    console.log(`[EMAIL] Notification sent successfully to ${OWNER_EMAIL}`);
-    return { success: true, status: 'sent' };
-
-  } catch (err) {
-    console.error(`[EMAIL] Notification failed: ${err.message}`);
-    db.updateNotificationStatus(enquiry.id, {
-      email_status: 'failed',
-      email_error: err.message.slice(0, 300)
-    });
-    return { success: false, status: 'failed', error: err.message };
-  }
-}
+const emailService = require('./email');
+const {
+  sendNotificationEmail,
+  sendEmailJSNotification,
+  sendQuoteEmail,
+  createTransporter,
+  buildDetailLines,
+  SERVICE_LABELS
+} = emailService;
 
 async function sendNotificationSms(enquiry, options = {}) {
   const hasTwilio = Boolean(sendNotificationSms._mockFetch || (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER && OWNER_PHONE));
@@ -1140,12 +922,13 @@ app.use((err, req, res, _next) => {
 });
 
 app.sendNotificationEmail = sendNotificationEmail;
+app.sendEmailJSNotification = sendEmailJSNotification;
 app.sendNotificationSms = sendNotificationSms;
 module.exports = app;
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 async function main() {
-  transporter = await createTransporter();
+  await createTransporter();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n======================================================`);
     console.log(`  COMPLETE GLASS INNOVATIONS — FULL-STACK SERVER`);
