@@ -6,7 +6,7 @@
     "postinstall": "cd server && npm install",
     "start": "node server/index.js",
     "dev": "cd server && npx nodemon index.js",
-    "test": "node -e \"console.log('Validating files...'); require('./server/db.js'); console.log('Database OK');\""
+    "test": "cd server && node test_audit.js"
   },
   "keywords": [
     "glazier",
@@ -18,7 +18,7 @@
   ],
   "author": "Complete Glass Innovations",
   "license": "UNLICENSED",
-  "dependencies": {
-    "ai": "^7.0.95"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

@@ -58,7 +58,7 @@
 
   /* ---------- magnetic CTAs ---------- */
   if (!coarse) {
-    var mags = document.querySelectorAll('.hero-ctas .btn, .big-phone, .quickbar .btn');
+    var mags = document.querySelectorAll('.hero-ctas .btn, .big-phone');
     mags.forEach(function (el) {
       el.classList.add('magnet');
       el.addEventListener('pointermove', function (e) {
