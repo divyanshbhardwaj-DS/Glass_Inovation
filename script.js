@@ -488,17 +488,16 @@
 
     var hasValidationErr = false;
 
-    // Validate Length if provided
+    // Validate Length if provided (CH-015, CH-016, CH-017, CH-018: optional, positive mm)
     var exLenInput = document.getElementById('fExLength');
     var isExtra = !!EXTRA_SERVICES[fService.value];
     if (isExtra && exLenInput) {
       var exLenVal = exLenInput.value.trim();
-      if (!exLenVal) {
-        setFieldError('length', 'Please enter the required length in mm.');
-        hasValidationErr = true;
-      } else if (isNaN(Number(exLenVal)) || Number(exLenVal) <= 0) {
-        setFieldError('length', 'Length must be a positive number in mm.');
-        hasValidationErr = true;
+      if (exLenVal) {
+        if (isNaN(Number(exLenVal)) || Number(exLenVal) <= 0) {
+          setFieldError('length', 'Length must be a positive number in mm.');
+          hasValidationErr = true;
+        }
       }
     }
 
