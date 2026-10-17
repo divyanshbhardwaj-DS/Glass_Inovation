@@ -18,8 +18,6 @@
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(syncAnnHeight); }
   var toTop = document.getElementById('toTop');
   var progress = document.getElementById('progressBar');
-  var quickbar = document.getElementById('quickbar');
-  var footer = document.getElementById('footer');
   function onScroll(){
     var y = window.scrollY;
     header.classList.toggle('scrolled', y > 12);
@@ -27,10 +25,6 @@
     if(progress){
       var max = document.documentElement.scrollHeight - window.innerHeight;
       progress.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
-    }
-    if(quickbar && footer){
-      var fr = footer.getBoundingClientRect();
-      quickbar.classList.toggle('hide', fr.top < window.innerHeight);
     }
   }
   document.addEventListener('scroll', onScroll, {passive:true});
@@ -609,22 +603,22 @@
     // Reusable data structure for before/after projects
     var projects = [
       {
-        id: 'shower-screen',
-        title: 'Frameless Shower Screen Transformation',
-        description: 'Replacing dated framed aluminium and frosted glass with custom 10mm toughened frameless glass transforms light transmission and perceived bathroom space.',
-        before: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1400&auto=format&fit=crop',
-        after: 'https://images.unsplash.com/photo-1771929662486-f793e08f0f16?q=80&w=1400&auto=format&fit=crop',
-        beforeAlt: 'Before: Dated framed bathroom with heavy aluminium surround',
-        afterAlt: 'After: Custom architectural frameless glass shower screen'
+        id: 'splashback',
+        title: 'Kitchen Splashback Transformation',
+        description: 'Removing dated tiled grout lines and installing a seamless, custom heat-toughened glass splashback in a matched colour creates an immaculate contemporary finish.',
+        before: 'media/work/kitchen-splashback-before.jpg',
+        after: 'media/work/kitchen-splashback-after.jpg',
+        beforeAlt: 'Before: dated kitchen tiled splashback with visible grout joints',
+        afterAlt: 'After: modern seamless toughened glass splashback installation'
       },
       {
-        id: 'splashback',
-        title: 'Architectural Kitchen Splashback',
-        description: 'Removing dated tiled grout lines and installing a seamless, custom heat-toughened glass splashback in Dulux matched colour creates an immaculate contemporary finish.',
-        before: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=1400&auto=format&fit=crop',
-        after: 'https://images.unsplash.com/photo-1746439305879-74bb5db52ee2?q=80&w=1400&auto=format&fit=crop',
-        beforeAlt: 'Before: Dated kitchen tiled splashback with visible grout joints',
-        afterAlt: 'After: Modern seamless toughened glass splashback installation'
+        id: 'vanity-mirror',
+        title: 'Custom Vanity Mirror Fit-Out',
+        description: 'Replacing an incomplete vanity mirror with a single polished custom-cut panel gives the whole basin wall a clean, seamless finish with no visible joins.',
+        before: 'media/work/vanity-mirror-before.jpg',
+        after: 'media/work/vanity-mirror-after.jpg',
+        beforeAlt: 'Before: vanity with incomplete shelving and patchwork mirror',
+        afterAlt: 'After: full-width polished custom mirror over the timber vanity'
       }
     ];
 
@@ -1068,6 +1062,24 @@
     // Initial load
     loadConfig();
     loadApprovedReviews();
+  })();
+
+  /* ---- Site video strip: play in view, pause out of view ---- */
+  (function(){
+    var vids = document.querySelectorAll('#siteVideos video');
+    if(!vids.length || reduceMotion || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var v = en.target;
+        if(en.isIntersecting){
+          var p = v.play();
+          if(p && p.catch) p.catch(function(){});
+        } else if(!v.paused){
+          v.pause();
+        }
+      });
+    }, { threshold: 0.55 });
+    vids.forEach(function(v){ io.observe(v); });
   })();
 })();
 
