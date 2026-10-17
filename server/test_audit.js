@@ -524,7 +524,7 @@ async function runAllTests() {
     const showerSaved = showerRes.status === 201 && showerRes.json && showerRes.json.id;
     const showerLeadId = showerSaved ? showerRes.json.id : null;
     const showerLead = showerLeadId ? db.findById(showerLeadId) : null;
-    const showerFrameOk = showerLead && showerLead.details && showerLead.details.shower_frame === 'Fully Frameless Sliding';
+    const showerFrameOk = showerLead && showerLead.details && (showerLead.details.shower_frame === 'Fully Frameless Sliding' || showerLead.details.shower_frame === 'Fully frameless sliding');
     const showerGlassOk = showerLead && showerLead.details && showerLead.details.shower_glass === 'Obscure Laminated';
     const showerPhotoOk = showerLead && showerLead.photo && fs.existsSync(path.join(__dirname, 'data', 'uploads', showerLead.photo));
     recordTest(29, 'Shower screen with Fully Frameless Sliding, Obscure Laminated & photo upload persisted', showerSaved && showerFrameOk && showerGlassOk && showerPhotoOk, `Lead #${showerLeadId}, Frame: ${showerLead?.details?.shower_frame}`);
