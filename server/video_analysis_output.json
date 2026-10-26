@@ -1,0 +1,178 @@
+[
+  {
+    "file": "vid.mp4",
+    "duration": "7.7s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "2.30 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-16.7 dB",
+    "maxVol": "-2.1 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "vid1.mp4",
+    "duration": "10.0s",
+    "resolution": "1920x1080",
+    "fps": "24.0",
+    "size": "7.21 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "vid2.mp4",
+    "duration": "14.8s",
+    "resolution": "3840x2160",
+    "fps": "30.0",
+    "size": "25.02 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/frameless-sliding-door-demo.mp4",
+    "duration": "20.7s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "2.48 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/frameless-sliding-walkthrough.mp4",
+    "duration": "21.3s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "1.93 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/install-frameless-corner-screen.mp4",
+    "duration": "17.0s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "1.50 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/install-patterned-shower.mp4",
+    "duration": "30.0s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "3.35 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/sealing-frameless-walk-in.mp4",
+    "duration": "20.3s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "2.84 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "media/work/walkthrough-patterned-shower.mp4",
+    "duration": "32.0s",
+    "resolution": "720x1280",
+    "fps": "30.0",
+    "size": "4.11 MB",
+    "audio": "NO AUDIO STREAM",
+    "meanVol": "N/A",
+    "maxVol": "N/A",
+    "aCodec": "none"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6309.MOV",
+    "duration": "716.2s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "752.76 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-26.8 dB",
+    "maxVol": "-0.3 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6311.MOV",
+    "duration": "43.5s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "45.28 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-37.7 dB",
+    "maxVol": "-0.8 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6373.MOV",
+    "duration": "17.0s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "26.36 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-27.2 dB",
+    "maxVol": "-3.4 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6375.MOV",
+    "duration": "19.2s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "30.14 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-29.7 dB",
+    "maxVol": "-4.9 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6379.MOV",
+    "duration": "20.7s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "21.88 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-40.8 dB",
+    "maxVol": "-16.0 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6426.MOV",
+    "duration": "20.3s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "37.43 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-34.3 dB",
+    "maxVol": "-9.7 dB",
+    "aCodec": "aac"
+  },
+  {
+    "file": "imgsvideos/drive-download-20260818T003115Z-1-001/IMG_6508.MOV",
+    "duration": "21.3s",
+    "resolution": "1920x1080",
+    "fps": "30.0",
+    "size": "22.17 MB",
+    "audio": "HAS AUDIO",
+    "meanVol": "-41.6 dB",
+    "maxVol": "-14.8 dB",
+    "aCodec": "aac"
+  }
+]

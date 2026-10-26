@@ -17,7 +17,8 @@ const SERVICE_LABELS = {
   poolfencing: 'Pool Fencing',
   balustrade: 'Balustrades',
   privacy: 'Privacy Screens',
-  repairs: 'Window Repairs'
+  repairs: 'Window Repairs',
+  tabletop: 'Tabletops'
 };
 
 /**
@@ -73,12 +74,17 @@ function extractQuoteDetails(enquiry) {
     case 'balustrade':
     case 'privacy':
     case 'repairs':
+    case 'tabletop':
       if (d.length || d.extra_length) {
         lengthVal = `${d.length || d.extra_length}mm`;
       }
       if (d.extra_width || d.extra_height) {
         measurementsList.push(`${d.extra_width || '—'}mm × ${d.extra_height || '—'}mm`);
       }
+      if (d.tabletop_length || d.tabletop_width) {
+        measurementsList.push(`${d.tabletop_length || '—'}mm × ${d.tabletop_width || '—'}mm`);
+      }
+      if (d.tabletop_thickness) selectedOptionsList.push(`Glass preference: ${d.tabletop_thickness}`);
       break;
   }
 
@@ -93,6 +99,7 @@ function extractQuoteDetails(enquiry) {
           'pet_prox_location', 'pet_reglazing', 'pet_location_detail', 'mirror_type', 'mirror_unit',
           'mirror_width', 'mirror_height', 'mirror_finish', 'splashback_unit', 'splashback_width',
           'splashback_height', 'splashback_finish', 'splashback_brand', 'splashback_colour', 'splashback_colour_code',
+          'tabletop_length', 'tabletop_width', 'tabletop_thickness', 'tabletop_unit',
           'extra_unit', 'extra_width', 'extra_height', 'length', 'extra_length'].includes(k)) {
       if (d[k]) selectedOptionsList.push(`${k}: ${d[k]}`);
     }
@@ -151,14 +158,17 @@ function buildDetailLines(enquiry) {
     case 'poolfencing':
     case 'balustrade':
     case 'privacy':
-    case 'repairs': {
+    case 'repairs':
+    case 'tabletop': {
       if (d.length || d.extra_length) lines.push(`Length: ${d.length || d.extra_length}mm`);
       if (d.extra_width || d.extra_height) lines.push(`Approx size: ${d.extra_width || '—'}mm × ${d.extra_height || '—'}mm`);
+      if (d.tabletop_length || d.tabletop_width) lines.push(`Approx tabletop size: ${d.tabletop_length || '—'}mm × ${d.tabletop_width || '—'}mm`);
+      if (d.tabletop_thickness) lines.push(`Glass preference: ${d.tabletop_thickness}`);
       break;
     }
   }
 
-  if (d.length && !['poolfencing', 'balustrade', 'privacy', 'repairs'].includes(enquiry.service)) {
+  if (d.length && !['poolfencing', 'balustrade', 'privacy', 'repairs', 'tabletop'].includes(enquiry.service)) {
     lines.push(`Length: ${d.length}mm`);
   }
 
@@ -168,6 +178,7 @@ function buildDetailLines(enquiry) {
           'pet_prox_location', 'pet_reglazing', 'pet_location_detail', 'mirror_type', 'mirror_unit',
           'mirror_width', 'mirror_height', 'mirror_finish', 'splashback_unit', 'splashback_width',
           'splashback_height', 'splashback_finish', 'splashback_brand', 'splashback_colour', 'splashback_colour_code',
+          'tabletop_length', 'tabletop_width', 'tabletop_thickness', 'tabletop_unit',
           'extra_unit', 'extra_width', 'extra_height', 'length', 'extra_length'].includes(k)) {
       if (d[k]) lines.push(`${k}: ${d[k]}`);
     }

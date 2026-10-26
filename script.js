@@ -1064,22 +1064,170 @@
     loadApprovedReviews();
   })();
 
-  /* ---- Site video strip: play in view, pause out of view ---- */
+  /* ---- Video media controls and autoplay policy handling ---- */
   (function(){
-    var vids = document.querySelectorAll('#siteVideos video');
-    if(!vids.length || reduceMotion || !('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        var v = en.target;
-        if(en.isIntersecting){
-          var p = v.play();
-          if(p && p.catch) p.catch(function(){});
-        } else if(!v.paused){
-          v.pause();
+    function getSessionFlag(){
+      try {
+        return sessionStorage.getItem('cgi-video-unmuted');
+      } catch (e) {
+        return null;
+      }
+    }
+    function setSessionFlag(value){
+      try {
+        sessionStorage.setItem('cgi-video-unmuted', value);
+      } catch (e) {}
+    }
+    function getSpeakerSvg(muted){
+      if (muted) {
+        return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 9l6 6"/><path d="m21 9-6 6"/></svg>';
+      }
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>';
+    }
+    function syncVideoUi(video, button, slider){
+      if(!video || !button || !slider) return;
+      var muted = video.muted || video.volume === 0;
+      button.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      button.setAttribute('aria-label', muted ? 'Unmute video' : 'Mute video');
+      button.innerHTML = getSpeakerSvg(muted);
+      slider.value = muted ? '0' : String(Math.max(0.15, Math.min(video.volume || 0.75, 1)));
+    }
+    function setVideoMuted(video, muted, button, slider, persist){
+      if(!video) return;
+      video.muted = !!muted;
+      if (!muted && Number(video.volume) === 0) video.volume = 0.72;
+      if (persist) {
+        setSessionFlag(muted ? 'muted' : 'unmuted');
+      }
+      if (button && slider) syncVideoUi(video, button, slider);
+    }
+    function attachVideoControls(video){
+      if(!video || video.dataset.videoControls === 'true') return;
+      video.dataset.videoControls = 'true';
+      video.tabIndex = 0;
+      video.setAttribute('aria-label', video.getAttribute('aria-label') || 'Video');
+      var shell = video.parentNode;
+      if (!shell || !shell.classList.contains('video-shell')) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'video-shell';
+        shell = shell || document.body;
+        shell.insertBefore(wrapper, video);
+        wrapper.appendChild(video);
+      }
+      var bar = shell.querySelector('.video-control-bar');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.className = 'video-control-bar';
+        shell.appendChild(bar);
+      }
+      var button = bar.querySelector('.video-toggle');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'video-toggle';
+        bar.appendChild(button);
+      }
+      var slider = bar.querySelector('.video-volume');
+      if (!slider) {
+        slider = document.createElement('input');
+        slider.type = 'range';
+        slider.className = 'video-volume';
+        slider.min = '0';
+        slider.max = '1';
+        slider.step = '0.01';
+        slider.setAttribute('aria-label', 'Volume');
+        bar.appendChild(slider);
+      }
+      var persisted = getSessionFlag();
+      if (persisted === 'unmuted') {
+        video.volume = Math.max(0.15, video.volume || 0.8);
+        video.muted = false;
+      } else {
+        video.muted = video.hasAttribute('muted') || video.defaultMuted || true;
+      }
+      syncVideoUi(video, button, slider);
+      button.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var nextMuted = !video.muted;
+        setVideoMuted(video, nextMuted, button, slider, true);
+        if (!video.paused) {
+          video.play().catch(function(){});
         }
       });
-    }, { threshold: 0.55 });
-    vids.forEach(function(v){ io.observe(v); });
+      slider.addEventListener('input', function(){
+        var level = parseFloat(slider.value || '0');
+        video.volume = level;
+        if (level <= 0) {
+          setVideoMuted(video, true, button, slider, true);
+        } else {
+          setVideoMuted(video, false, button, slider, true);
+        }
+      });
+      video.addEventListener('volumechange', function(){ syncVideoUi(video, button, slider); });
+      video.addEventListener('keydown', function(e){
+        if (e.key === 'm' || e.key === 'M') {
+          e.preventDefault();
+          setVideoMuted(video, !video.muted, button, slider, true);
+          if (!video.paused) video.play().catch(function(){});
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          var nextLevel = Math.min(1, (Number(video.volume) || 0.7) + 0.1);
+          video.volume = nextLevel;
+          setVideoMuted(video, false, button, slider, true);
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          var downLevel = Math.max(0, (Number(video.volume) || 0.7) - 0.1);
+          video.volume = downLevel;
+          setVideoMuted(video, downLevel <= 0, button, slider, true);
+        }
+      });
+      var unmuteOnUserInteraction = function(){
+        if (getSessionFlag() === 'unmuted' && video.muted) {
+          setVideoMuted(video, false, button, slider, false);
+        }
+      };
+      video.addEventListener('play', function(){
+        if (video.muted && getSessionFlag() !== 'unmuted') {
+          video.muted = true;
+        }
+      });
+      video.addEventListener('click', unmuteOnUserInteraction);
+      video.addEventListener('touchstart', unmuteOnUserInteraction, { passive: true });
+    }
+
+    function initLoopVideos(){
+      var vids = document.querySelectorAll('#siteVideos video, .hero-media video');
+      vids.forEach(function(v){ attachVideoControls(v); });
+      if(!vids.length || reduceMotion || !('IntersectionObserver' in window)) return;
+      var activeVideo = null;
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          var v = en.target;
+          if(!v || !v.parentNode) return;
+          if(en.isIntersecting){
+            if (activeVideo && activeVideo !== v) {
+              activeVideo.pause();
+            }
+            var p = v.play();
+            if(p && p.catch) p.catch(function(){});
+            activeVideo = v;
+          } else if(!v.paused){
+            v.pause();
+          }
+        });
+      }, { threshold: 0.55 });
+      vids.forEach(function(v){ io.observe(v); });
+      document.addEventListener('click', function(e){
+        var clickedVideo = e.target.closest('video');
+        if (!clickedVideo || clickedVideo === activeVideo) return;
+        if (activeVideo && activeVideo !== clickedVideo) activeVideo.pause();
+        activeVideo = clickedVideo;
+      }, { passive: true });
+    }
+    initLoopVideos();
   })();
 })();
 
