@@ -337,7 +337,7 @@ app.post('/api/quote', quoteLimiter, (req, res) => {
         errors.suburb = 'Suburb name is too long.';
       }
 
-      const VALID_SERVICES = ['shower', 'petdoor', 'mirror', 'splashback', 'poolfencing', 'balustrade', 'privacy', 'repairs'];
+      const VALID_SERVICES = ['shower', 'petdoor', 'mirror', 'splashback', 'poolfencing', 'balustrade', 'privacy', 'repairs', 'tabletop'];
       if (!cleanService || !VALID_SERVICES.includes(cleanService)) {
         errors.service = 'Please select what you need a quote for.';
       }
@@ -354,7 +354,7 @@ app.post('/api/quote', quoteLimiter, (req, res) => {
       // Validate numeric measurements if supplied
       ['shower_length', 'shower_width', 'shower_height', 'mirror_width', 'mirror_height',
        'splashback_width', 'splashback_height', 'extra_width', 'extra_height',
-       'pet_width', 'pet_height'].forEach(f => {
+       'pet_width', 'pet_height', 'tabletop_length', 'tabletop_width'].forEach(f => {
         if (body[f] !== undefined && body[f] !== null && String(body[f]).trim() !== '') {
           const valNum = Number(body[f]);
           if (isNaN(valNum) || valNum <= 0) {
