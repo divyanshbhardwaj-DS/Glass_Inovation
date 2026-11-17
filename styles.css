@@ -808,18 +808,6 @@ section.section-flush{padding-top:0;}
     linear-gradient(180deg, rgba(11,12,14,0.34), rgba(11,12,14,0.72) 62%, rgba(11,12,14,0.94)),
     linear-gradient(115deg, rgba(200,53,58,0.2), transparent 60%);
 }
-.swatch-stack{position:relative; z-index:1; display:flex; flex-direction:column; gap:14px; width:76%;}
-.swatch{
-  height:66px; border-radius:var(--r-m); border:1px solid var(--line-2);
-  display:flex; align-items:center; justify-content:space-between; padding:0 20px;
-  font-family:var(--font-mono); font-size:11px; color:var(--muted);
-  background:linear-gradient(120deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
-  backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
-  transition:transform .4s var(--ease), border-color .4s var(--ease);
-}
-.swatch b{color:var(--accent-hi); font-weight:400;}
-.about-visual:hover .swatch{border-color:var(--accent);}
-
 .about-copy .eyebrow{margin-bottom:20px;}
 .about-copy h2{font-size:clamp(28px,3vw,38px); margin-bottom:24px; max-width:16ch; line-height:1.12;}
 .about-copy p{color:var(--muted); font-size:16px; line-height:1.78;}
@@ -1266,12 +1254,6 @@ html.cursor-pressed .cursor-ring{width:30px; height:30px; border-color:var(--acc
 .card3d:hover .gexpand{transform:translate3d(calc(var(--px,0)*16px), calc(var(--py,0)*12px), 0) rotate(45deg);}
 .card3d .gtag{transform:translate3d(calc(var(--px,0)*13px), calc(var(--py,0)*10px), 0); transition:transform .5s var(--ease);}
 .card3d .gloc{transform:translate3d(calc(var(--px,0)*5px), calc(var(--py,0)*4px), 0); transition:transform .55s var(--ease);}
-
-/* --- about swatches: per-row depth instead of flat shift --- */
-.swatch{transform:translate3d(calc(var(--px,0)*6px), calc(var(--py,0)*5px), 0); transition:transform .5s var(--ease), border-color .25s var(--ease);}
-.swatch-stack{transform:translate3d(calc(var(--px,0)*3px), calc(var(--py,0)*2px), 0); transition:transform .5s var(--ease);}
-.about-visual:hover .swatch:nth-child(2){transform:translate3d(calc(var(--px,0)*11px), calc(var(--py,0)*8px), 0);}
-.about-visual:hover .swatch:nth-child(3){transform:translate3d(calc(var(--px,0)*15px), calc(var(--py,0)*11px), 0);}
 
 /* --- press/tap feedback (works on touch too) --- */
 .gcard:active{transform:scale(.985);}
@@ -2806,18 +2788,6 @@ input[type="range"]::-webkit-slider-thumb:hover{
 .faq-answer strong{
   color:var(--frost);
 }
-
-/* Swatch Dots in About */
-.swatch-dot{
-  display:inline-block;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#fff;
-  margin-right:6px;
-}
-.dot-lowiron{background:var(--glint);}
-.dot-frosted{background:#AEB4C0;}
 
 .link-highlight{
   color:var(--glint);
